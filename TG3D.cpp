@@ -1,4 +1,6 @@
-#include "TG3D.h"
+#include "TH3D.h"
+#ifndef __TH3D__
+#define __TH3D__
 
 class TG3D {
 	TG3D::TG3D(void) {
@@ -28,5 +30,6 @@ class TG3D {
 		}
 	}
 
-	TG3D::TG3D(void){}
+	TG3D::~TG3D(void){}
 };
+#endif // !__TG3D__

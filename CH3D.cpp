@@ -1,6 +1,4 @@
 #include "CH3D.h"
-
-class CH3D {
 	CH3D::CH3D(void) {
 		x = y = z = w = 0.0F;
 	}
@@ -17,4 +15,4 @@ class CH3D {
 		w = ch->w;
 	}
 	CH3D::~CH3D(void){}
-};
+	

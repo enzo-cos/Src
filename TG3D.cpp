@@ -1,6 +1,6 @@
 #include "TG3D.h"
 
-class TG3D {
+
 	TG3D::TG3D(void) {
 		for (int l = 0; l < 4; l++) {
 			for (int c = 0; c < 4; c++) {
@@ -29,4 +29,3 @@ class TG3D {
 	}
 
 	TG3D::~TG3D(void){}
-};

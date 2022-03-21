@@ -37,25 +37,8 @@ static void init(void) {
 }
 
 /* Construire la sphère et le cube*/
-static void sphcube() {
+static void Robot() {
     glPushMatrix();
-    if (turn == 360.0F) {
-        turn = 0.0F;
-        nbTour += 6.0F;
-    }
-    // glRotatef(nbTour*6, 0.0F, 0.0F, 1.0F);
-    glRotatef(60.0F, 0.0F, 0.0F, 1.0F);
-    float gris[4] = { 0.8F,0.8F,0.8F,1.0F };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-    glutSolidSphere(0.5, 70, 70);
-    glRotatef(turn, 1.0F,0.0F, 0.0F);
-   
-    glTranslatef(0.0F,0.55F, 0.0F);
-   
-    float rouge[4] = { 1.0F,0.0F,0.0F,1.0F };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, rouge);
-   
-    glutSolidCube(0.1);
     glPopMatrix();
 }
 
@@ -65,7 +48,7 @@ static void sphcube() {
 
 static void scene(void) {
     glPushMatrix();
-    sphcube();
+    Robot();
     glPopMatrix();
 }
 

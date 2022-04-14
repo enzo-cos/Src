@@ -24,14 +24,24 @@ static float rota = 0.0F;
 static float turn = 0.0F;
 static float nbTour = 0.0F;
 
+static float r1 = 0.0f;
+static float r2 = 90.0f;
+static float angle = 0.0f;
+static float angley = 0.0f;
+static float anglex = 0.0f;
+static bool droite = true;
+float gris[4] = { 0.5F,0.5F,0.5F,1.0F };
+float jaune[4] = { 1.0F,1.0F,0.0F,1.0F };
+float marron[4] = { 0.54F,0.27F,0.07F,1.0F };
+
 
 static float c1 = 1.0F;
 static float c2 = 1.0F;
 static float c3 = 1.0F;
 
-static float avX = 0.0F;
+static float avX = 20.0F;
 static float avY = 3.0F;
-static float avZ = 0.0F;
+static float avZ = 20.0F;
 
 static double posX = 0.0;
 static double posY = 10.0;
@@ -63,7 +73,7 @@ static float tJaune[4] = { 1.0F,1.0F,1.0F,1.0F };
 /* OpenGL ne changeant pas au cours de la vie   */
 /* du programme                                 */
 static unsigned int textureID = 0;
-static int texture =0;
+static int texture =1;
 
 static void initTexture(void) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -71,11 +81,12 @@ static void initTexture(void) {
     glBindTexture(GL_TEXTURE_2D, textureID);
     { //int rx = 16;
       //int ry = 16;
-        char* nomFichier = "textMars3.png";
+        char* nomFichier = "textMars2.png";
         int rx;
         int ry;
         printf("%s\n", nomFichier);
         unsigned char* img = chargeImagePng(nomFichier, &rx, &ry);
+        printf("rx : %d, ry : %d\n",rx, ry);
         if (img) {
             glTexImage2D(GL_TEXTURE_2D, 0, 3, rx, ry, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
             free(img);
@@ -160,6 +171,9 @@ static void cubeFacette() {
 
 static void genTerrain() {
     glPushMatrix();
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
+    //glMaterialfv(GL_FRONT, GL_DIFFUSE, marron);
     float y = 0.0F;
     float x=-50.0F;
     float z = -50.0F;
@@ -187,25 +201,158 @@ static void genTerrain() {
     //    }
     glNormal3f(0.0F, 1.0F, 0.0F);
     glBegin(GL_QUADS);
-   // glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(-50, y, 50);
-    //glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(50, y, 50);
-   // glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(50, y, -50);   
-    //glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(-50, y, -50);
+    glTexCoord2f(0.0F, 1.0F);
+    glVertex3f(-80, y, 80);
+    glTexCoord2f(1.0F, 1.0F);
+    glVertex3f(80, y, 80);
+    glTexCoord2f(1.0F, 0.0F);
+    glVertex3f(80, y, -80);   
+    glTexCoord2f(0.0F, 0.0F);
+    glVertex3f(-80, y, -80);
     
     glEnd();
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
 
 static void DeplSph(void) {
     glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
     glTranslatef(avX, avY, avZ);
     glutSolidSphere(3.5, 250, 250);
     glTranslatef(avX+10, avY, avZ+5);
     glutSolidSphere(2.5, 150, 150);
+    glPopMatrix();
+}
+static void cylindre(double h, double r, int n, int m) {
+    glPushMatrix();
+    glRotatef(90.0F, 1.0f, 0.0F, 0.0F);
+    glTranslatef(0.0F, 0.0F, -h / 2);
+    GLUquadricObj* qobj = gluNewQuadric();
+    gluQuadricDrawStyle(qobj, GLU_FILL);
+    gluCylinder(qobj, r, r, h, n, m);
+    gluDeleteQuadric(qobj);
+    glPopMatrix();
+}
+
+void brasRobot(float r1, float r2, bool droite) {
+
+    if (droite) {
+        glPushMatrix();
+        glTranslatef(0.0f, 1.0f, 0.0f);
+        glRotatef(r1, 0.0f, 1.0f, 0.0f);
+        glTranslatef(2.5f, 0.0f, 0.0f);
+        glPushMatrix();
+        /*  glScalef(2.0f, 1.0f, 1.0f);
+          glutSolidCube(1.0);*/
+        glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
+        cylindre(3.0, 0.5, 12, 12);
+
+        glPopMatrix();
+        glTranslatef(1.5f, 0.0f, 0.0f);
+        glRotatef(r2, 0.0f, 1.0f, 0.0f);
+        glTranslatef(1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+        glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
+        cylindre(3.0, 0.4, 12, 12);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
+        glTranslatef(0.0f, -1.7f, 0.0f);
+        glutSolidSphere(0.6, 20, 20);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
+        /*glScalef(2.0f, 0.8f, 0.8f);
+        glutSolidCube(1.0);*/
+        glPopMatrix();
+        glPopMatrix();
+    }
+    else {
+        glPushMatrix();
+        glTranslatef(0.0f, 1.0f, 0.0f);
+        glRotatef(r1, 0.0f, 1.0f, 0.0f);
+        glTranslatef(-2.5f, 0.0f, 0.0f);
+        glPushMatrix();
+        /* glScalef(2.0f, 1.0f, 1.0f);
+         glutSolidCube(1.0);*/
+        glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
+        cylindre(3.0, 0.5, 12, 12);
+        glPopMatrix();
+        glTranslatef(-1.5f, 0.0f, 0.0f);
+        glRotatef(r2, 0.0f, 1.0f, 0.0f);
+        glTranslatef(-1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+        /*glScalef(2.0f, 0.8f, 0.8f);
+        glutSolidCube(1.0);*/
+        glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
+
+        cylindre(3.0, 0.4, 12, 12);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
+        glTranslatef(0.0f, 1.7f, 0.0f);
+        glutSolidSphere(0.6, 20, 20);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
+        glPopMatrix();
+        glPopMatrix();
+
+    }
+
+}
+
+
+void cube() {
+    glPushMatrix();
+    float gris[4] = { 0.5F,0.5F,0.5F,1.0F };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
+
+    glutSolidCube(3.0);
+
+    glPopMatrix();
+
+
+}
+
+void cou() {
+    glPushMatrix();
+    glTranslatef(0.0f, 2.5f, 0.0f);
+    glPushMatrix();
+    glScalef(1.0F, 2.0F, 1.0F);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
+    glutSolidCube(1);
+
+    glPopMatrix();
+    glPopMatrix();
+
+}
+
+
+
+
+void tete() {
+    glPushMatrix();
+    glTranslatef(0.0F, 4.0F, 0.0F);
+    glPushMatrix();
+    glTranslatef(0.8f, 0.0f, 0.0f);
+    glPushMatrix();
+    glutSolidSphere(0.5, 10, 10);
+    glPopMatrix();
+    glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
+    cylindre(1.5, 0.6, 12, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.8f, 0.0f, 0.0f);
+    glPushMatrix();
+    glutSolidSphere(0.5, 10, 10);
+    glPopMatrix();
+    glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
+    cylindre(1.5, 0.6, 12, 12);
+
+    glPopMatrix();
+    glPopMatrix();
+
+}
+
+void pied() {
+    glPushMatrix();
+    glTranslatef(0.0f, -2.0f, 0.f);
+    glutSolidSphere(2.5, 20, 20);
     glPopMatrix();
 }
 /* Scene dessinee  */
@@ -214,6 +361,25 @@ static void scene(void) {
     glPushMatrix();
     genTerrain();
     DeplSph();
+    //ROBOT
+    glPushMatrix();
+    glTranslatef(posRobotX, 3.0, posRobotZ);
+    glRotatef(90, 0.0f, 1.0F,0.0f);
+    //glutSolidCube(5);
+    //glPopMatrix();
+    //glPushMatrix();
+    cube();
+    cou();
+    tete();
+    pied();
+    glPushMatrix();
+    glScalef(0.8f, 1.0f, 1.0f);
+    brasRobot(r1, -r2, droite);
+    brasRobot(r1, r2, !droite);
+    glPopMatrix();
+    glPopMatrix();
+    //FIN ROBOT
+
     glPopMatrix();
 }
 
@@ -221,10 +387,10 @@ static void scene(void) {
 /* de la fenetre de dessin                      */
 
 static void display(void) {
-    if (texture)
+    /*if (texture)
         glEnable(GL_TEXTURE_2D);
     else
-        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_2D);*/
     printf("D\n");
     /*rota = 25.0;
     turn = 10.0;*/
@@ -250,7 +416,7 @@ static void display(void) {
         gluLookAt(posX, posY, posZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     }
     else {
-       gluLookAt(posRobotX, posRobotY, posRobotZ, posRobotX + dirX, 0.0, posRobotZ+dirZ, 0.0, 1.0, 0.0);
+       gluLookAt(posRobotX, posRobotY, posRobotZ, posRobotX + dirX, 3.0, posRobotZ+dirZ, 0.0, 1.0, 0.0);
     }
         
     scene();
@@ -417,7 +583,7 @@ static void special(int specialKey, int x, int y) {
     printf("S  %4d %4d %4d\n", specialKey, x, y);
     switch (specialKey) {
         case 100: //fleche gauche
-            avZ -= 1.0F;
+            //avZ -= 1.0F;
             posRobotZ--;
             //turn--;
             glutPostRedisplay();
@@ -425,21 +591,21 @@ static void special(int specialKey, int x, int y) {
 
         case 101: //fleche haut
             
-            avX += 1.0F;
+            //avX += 1.0F;
             posRobotX++;
             //rota++;
             glutPostRedisplay();
             break;
 
         case 102: //fleche droite
-            avZ += 1.0F;
+            //avZ += 1.0F;
             posRobotZ++;
             //turn++;
             glutPostRedisplay();
             break;
 
         case 103: //fleche bas
-            avX -= 1.0F;
+            //avX -= 1.0F;
             posRobotX--;
             //rota--;
             glutPostRedisplay();
@@ -464,10 +630,10 @@ static void mouseMotion(int x, int y) {
     printf("MM %4d %4d\n", x, y);
     int diffX = mouseX - x;
     int diffY = mouseY - y;
-    rotaR = (rotaR % 360) - (diffX);
+    rotaR = (rotaR % 360) - (diffX / 2);
     dirZ = cos(rotaR * toRad) * prop;
     dirX = sin(rotaR * toRad) * prop;
-    posZ += (-diffY);
+    posZ += (-diffY / 2);
     glutPostRedisplay();
     mouseX = x;
     mouseY = y;

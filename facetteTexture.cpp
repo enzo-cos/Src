@@ -39,7 +39,7 @@ static void initTexture(void) {
     glBindTexture(GL_TEXTURE_2D, textureID);
     { //int rx = 16;
       //int ry = 16;
-        char* nomFichier = "textMars3.png";
+        char* nomFichier = "Bois.png";
         int rx;
         int ry;
         printf("%s\n", nomFichier);

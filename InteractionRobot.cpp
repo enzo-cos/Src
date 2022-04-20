@@ -19,6 +19,10 @@ static int wPy = 50;               // Position verticale de la fenetre
 static GLenum face = GL_FRONT_AND_BACK;
 static GLenum mode = GL_FILL;
 static bool anim = false;
+static double ymin = 3.0;
+static double ymax = 12.0;
+static bool montee = false;
+
 static bool cam = false;
 static bool contrePierre = false;
 static int nbCoup = 0;
@@ -50,12 +54,14 @@ static double posY = 10.0;
 static double posZ = 80.0;
 
 static double posRobotX = 0.0;
-static double posRobotY = 10.0;
+static double posRobotY = 3.0;
 static double posRobotZ = 0.0;
+static double posCameraRobotY = 10.0;
 
-static double dirX=10.0;
-static double dirY=0.0;
-static double dirZ=10.0;
+Dir3D dirRobot = Dir3D(10.0, 0.0, 10.0);
+//static double dirX=10.0;
+//static double dirY=0.0;
+//static double dirZ=10.0;
 
 static int rotaR = 0;
 static double prop = 10.0;
@@ -458,7 +464,7 @@ static void scene(void) {
     DeplSph();
     //ROBOT
     glPushMatrix();
-    glTranslatef(posRobotX, 3.0, posRobotZ);
+    glTranslatef(posRobotX, posRobotY, posRobotZ);
     glRotatef(90, 0.0f, 1.0F,0.0f);
     //glutSolidCube(5);
     //glPopMatrix();
@@ -476,7 +482,7 @@ static void scene(void) {
     //FIN ROBOT
    /* glPushMatrix();
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
-    glTranslatef(posRobotX + dirX, posRobotY + dirY, posRobotZ + dirZ);
+    glTranslatef(posRobotX + dirRobot.x, posRobotY + dirRobot.y, posRobotZ + dirRobot.z);
     glutSolidSphere(2, 170, 170);
     glPopMatrix();*/
 
@@ -502,8 +508,8 @@ static void display(void) {
     glLightfv(GL_LIGHT1, GL_DIFFUSE, tJaune);*/
     float coulLum[4] = { 1.0F,1.0F,0.0F,1.0F };
     //Lumière sur la tête du robot
-    float positionLum[4] = { posRobotX,posRobotY,posRobotZ,1.0F };
-    float directionLum[3] = { posRobotX + dirX, posRobotY+dirY, posRobotZ + dirZ };
+    float positionLum[4] = { posRobotX,posCameraRobotY,posRobotZ,1.0F };
+    float directionLum[3] = { posRobotX + dirRobot.x, posCameraRobotY+ dirRobot.y, posRobotZ + dirRobot.z };
     glLightfv(GL_LIGHT2, GL_POSITION, positionLum);
     glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 60.0F); 
     glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, directionLum);
@@ -517,7 +523,7 @@ static void display(void) {
         gluLookAt(posX, posY, posZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     }
     else {
-       gluLookAt(posRobotX, posRobotY, posRobotZ, posRobotX + dirX, dirY, posRobotZ+dirZ, 0.0, 1.0, 0.0);
+       gluLookAt(posRobotX, posCameraRobotY, posRobotZ, posRobotX + dirRobot.x, dirRobot.y, posRobotZ+ dirRobot.z, 0.0, 1.0, 0.0);
     }
         
     scene();
@@ -569,7 +575,17 @@ static void reshape(int wx, int wy) {
 
 static void idle(void) {
     printf("I\n");
-    turn += 2.0F;
+    if (montee) {
+        if (posRobotY < ymax) posRobotY += 0.2;
+        else montee = false;
+    }
+    else {
+        if (posRobotY > ymin) posRobotY -= 0.2;
+        else {
+            glutIdleFunc(NULL);
+            anim = false;
+        }
+    }
     glutPostRedisplay();
 }
 
@@ -602,6 +618,7 @@ static void keyboard(unsigned char key, int x, int y) {
         else {
             glutIdleFunc(idle);
             anim = true;
+            montee = true;
         }
         break;
 
@@ -773,11 +790,11 @@ static void mouseMotion(int x, int y) {
     int diffX = mouseX - x;
     int diffY = mouseY - y;
     rotaR = (rotaR % 360) - (diffX / 2);
-    dirZ = cos(rotaR * toRad) * prop;
-    dirX = sin(rotaR * toRad) * prop;
-    printf("Dir Z : %f\nDirX : %f", dirZ, dirX);
+    dirRobot.z = cos(rotaR * toRad) * prop;
+    dirRobot.x = sin(rotaR * toRad) * prop;
+    printf("Dir Z : %f\nDirX : %f", dirRobot.z, dirRobot.x);
     if (cam) {
-        dirY+= (-diffY / 2);
+        dirRobot.y += (-diffY / 2);
         
     }
     else {

@@ -303,11 +303,13 @@ static void DeplSph(void) {
     glScalef(1.0F, 1.0F, 1.0F);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
     int x = 3; int z = 3; int c = 4;
-    x = posRobotX+20;
-    z = posRobotZ;
+    x = 100+30;//Pos robot init
+    z = 100;
     glTranslatef(x, 3.0, z);
-    glutSolidCube(c);
-    modifMat(x, z, c, 1);
+    if (mat_obstacles[x][z] != -1) {
+        modifMat(x, z, c, 1);
+        glutSolidCube(c);
+    }
    for(int i=0;i<3;i++) {
        if (i == 0) {
            glTranslatef(-5, 0.0, 10);
@@ -321,14 +323,18 @@ static void DeplSph(void) {
        }
        else {
            glTranslatef(-5, 0.0, 5);
-           x -= 10;
+           x -= 5;
            z += 5;
        }
-       glutSolidCube(c);
-       modifMat(x, z, c, 1);
+       if (mat_obstacles[x][z] != -1) {
+           modifMat(x, z, c, 1);
+           glutSolidCube(c);
+       }
     }
-   /* glTranslatef(-5, 0.0, 10);
+    /*glTranslatef(-5, 0.0, 10);
     glutSolidCube(c);
+    x -= 5; z += 10;
+    modifMat(x, z, c, 1);
     glTranslatef(-5, 0.0, 5);
     glutSolidCube(c);
     glTranslatef(-10, 0.0, 5);
@@ -349,8 +355,10 @@ static void DeplSph(void) {
            x -= 5;
            z -= 5;
        }
-       glutSolidCube(c);
-       modifMat(x, z, c, 1);
+       if (mat_obstacles[x][z] != -1) {
+           modifMat(x, z, c, 1);
+           glutSolidCube(c);
+       }
    }
     /*glTranslatef(-5, 0.0, -10);
     glutSolidCube(c);
@@ -374,8 +382,10 @@ static void DeplSph(void) {
            x += 5;
            z -= 5;
        }
-       glutSolidCube(c);
-       modifMat(x, z, c, 1);
+       if (mat_obstacles[x][z] != -1) {
+           modifMat(x, z, c, 1);
+           glutSolidCube(c);
+       }
    }
     /*glTranslatef(5, 0.0, -5);
     glutSolidCube(c);
@@ -400,16 +410,20 @@ static void DeplSph(void) {
            x += 5;
            z += 5;
        }
-       glutSolidCube(c);
-       modifMat(x, z, c, 1);
+       if (mat_obstacles[x][z] != -1) {
+           modifMat(x, z, c, 1);
+           glutSolidCube(c);
+       }
    }
-    glTranslatef(10, 0.0, 5);
+
+  /*  glTranslatef(10, 0.0, 5);
     glutSolidCube(c);
     glTranslatef(5, 0.0, 5);
     glutSolidCube(c);
     glTranslatef(5, 0.0, 10);
-    glutSolidCube(c);
-    /*glTranslatef(x, 3.0, z);
+    glutSolidCube(c);*/
+
+   /* glTranslatef(x, 3.0, z);
     if (mat_obstacles[x][z] != -1) {
         modifMat(x, z, c, 1);
         glutSolidCube(c);
@@ -879,6 +893,8 @@ static void special(int specialKey, int x, int y) {
 
         case 101: //fleche haut
             reculer = false;
+            printf("Position robot : %f, %f\nDirection Robot : %f, %f\n",posRobotX,posRobotZ, posRobotX + dirRobot.x / 10, posRobotZ + dirRobot.z / 10);
+            printf("Matrice : %d\n", mat_obstacles[(int)(posRobotX + dirRobot.x / 10)][(int)(posRobotZ + dirRobot.z / 10)]);
             if (mat_obstacles[(int)(posRobotX + dirRobot.x / 10)][(int)(posRobotZ + dirRobot.z / 10)] != 1) {
                 posRobotX += (dirRobot.x / 10);
                 posRobotZ += (dirRobot.z / 10);

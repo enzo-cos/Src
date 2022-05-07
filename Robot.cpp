@@ -304,6 +304,14 @@ void rocher2(float x, float y, float z, float taille) {
 
     glEnd();
 
+    glBegin(GL_QUADS); //19
+    glVertex3f(0 * taille, 0 * taille, 8 * taille); //7
+    glVertex3f(0 * taille, 0 * taille, 0 * taille); //8
+    glVertex3f(18 * taille, 0 * taille, 0* taille); //14
+    glVertex3f(18 * taille, 0 * taille, 8 * taille); //13
+
+    glEnd();
+
 
     glPopMatrix();
 }
@@ -313,8 +321,9 @@ void rocher(float x, float y, float z, float taille) {
     glPushMatrix();
     glTranslatef(x, y, z);
     glScalef(1, 1, 1);
-    glRotatef(-45, 1.0f, 0.0f, 0.0f);
+   // glRotatef(-45, 1.0f, 0.0f, 0.0f);
     float zz = 2.0f;
+    float z2 = -2.0f;
     glBegin(GL_POLYGON);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
@@ -328,9 +337,9 @@ void rocher(float x, float y, float z, float taille) {
     glBegin(GL_POLYGON);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(3.0f * taille, -0.5F * taille, -1.0f * taille);//8
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(3.0f * taille, -0.5F * taille, z2 * taille);//8
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
     glEnd();
 
@@ -338,51 +347,62 @@ void rocher(float x, float y, float z, float taille) {
 
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(-4.5f * taille, -1.0f * taille, -1.0f * taille);//11
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(-4.5f * taille, -1.0f * taille, z2 * taille);//11
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
 
     glBegin(GL_QUADS);
 
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
 
     glEnd();
 
 
     glBegin(GL_TRIANGLES);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
     glBegin(GL_TRIANGLES);
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
+   
+    glBegin(GL_QUADS);
+    glVertex3f(-4.6f * taille, -2.0f * taille, zz * taille);
+    glVertex3f(-4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, zz * taille);
+    glEnd();
+
+
+  
+
     glBegin(GL_QUADS);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
 
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
     glEnd();
 
 
     glBegin(GL_TRIANGLES);
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
@@ -413,14 +433,14 @@ void robot(float taille) {
 /* Scene dessinee                               */
 
 static void scene(void) {
-    robot(10.0f);
+   // robot(10.0f);
     //robot(18);
-  /*  glPushMatrix();
-    rocher2(-10, 3, 0, 1);
-    glPopMatrix();
+   /* glPushMatrix();
+    rocher2(-10, 0, 0, 1);
+    glPopMatrix();*/
     glPushMatrix();
      rocher(0, -5, 0,2);
-     glPopMatrix();*/
+     glPopMatrix();
 
 }
 

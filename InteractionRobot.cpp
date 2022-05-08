@@ -73,11 +73,15 @@ Pos3D posRobot = Pos3D(tailleMars / 2, 3.0, tailleMars / 2);
 static double tailleRobot = tailleMars/40;
 static double posCameraRobotY = posRobot.y+ tailleRobot*0.6;
 Dir3D dirRobot = Dir3D(sin(rotaR * toRad) * prop, 0.0, cos(rotaR * toRad) * prop);
-Pos3D posCam3 = Pos3D(posRobot.x - 40, posRobot.y + 20, posRobot.z);
+Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 30, posRobot.z-30);
 static int rotaYeux = 0.0;
 
 static int mouseX = 0.0;
 static int mouseY = 0.0;
+
+//Taille pour rochers :
+static int TR1 = tailleRobot / 3;
+static int TR2 = tailleRobot / 6;
 
 //Ajout des potions des lumières
 
@@ -203,7 +207,7 @@ static void init(void) {
     genSol((int)tailleMars);
 }
 
-static void modifMat(int x, int z, int c, int val) {
+static void modifMatCube(int x, int z, int c, int val) {
     int l = c / 2;
     for (int i = x - l; i < x + l + 1; i++) {
         for (int j = z - l; j < z + l + 1; j++) {
@@ -211,19 +215,28 @@ static void modifMat(int x, int z, int c, int val) {
         }
     }
 }
-static void modifMat2(int x, int z, int largeur, int longueur, int val) {
-    int larg = largeur / 2;
-    int ll = longueur / 2;
-    for (int i = x - larg; i < x + larg + 1; i++) {
-        for (int j = z - ll; j < z + ll + 1; j++) {
+static void modifMatR1(int x, int z, int taille,int val) {
+    int longueur = taille * 4.61;
+    int larg = taille * 2;
+    for (int i = x - longueur; i < x + longueur; i++) {
+        for (int j = z - larg-5; j < z + larg+5; j++) {
             if (mat_obstacles[i][j] != -1) mat_obstacles[i][j] = val;
         }
     }
 }
-
-void rocher2(float x, float y, float z, double taille) {
+static void modifMatR2(int x, int z, int taille, int val) {
+    int longueur = taille * 18;
+    int larg = taille * 8;
+    for (int i = x-1; i < x + longueur+2; i++) {
+        for (int j = z-4; j < z + larg+2; j++) {
+            if (mat_obstacles[i][j] != -1) mat_obstacles[i][j] = val;
+        }
+    }
+}
+//Point en bas à gauche
+void rocher2(float x, float y, float z, float taille) {
     glPushMatrix();
-    glTranslatef(x, y, z);
+    //glTranslatef(x, y, z);
     glScalef(1, 1, 1);
 
     glBegin(GL_POLYGON);
@@ -304,18 +317,25 @@ void rocher2(float x, float y, float z, double taille) {
 
     glEnd();
 
+    glBegin(GL_QUADS); //19
+    glVertex3f(0 * taille, 0 * taille, 8 * taille); //7
+    glVertex3f(0 * taille, 0 * taille, 0 * taille); //8
+    glVertex3f(18 * taille, 0 * taille, 0 * taille); //14
+    glVertex3f(18 * taille, 0 * taille, 8 * taille); //13
+
+    glEnd();
+
 
     glPopMatrix();
 }
-
-
-void rocher(float x, float y, float z, double taille) {
-    modifMat2(x, z, taille*1.5,taille*1.6, 1);
+//point au centre, 4,6*taille*2, 2*taille*2
+void rocher(float x, float y, float z, float taille) {
     glPushMatrix();
     //glTranslatef(x, y, z);
     glScalef(1, 1, 1);
-   // glRotatef(-45, 1.0f, 0.0f, 0.0f);
+    // glRotatef(-45, 1.0f, 0.0f, 0.0f);
     float zz = 2.0f;
+    float z2 = -2.0f;
     glBegin(GL_POLYGON);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
@@ -329,9 +349,9 @@ void rocher(float x, float y, float z, double taille) {
     glBegin(GL_POLYGON);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(3.0f * taille, -0.5F * taille, -1.0f * taille);//8
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(3.0f * taille, -0.5F * taille, z2 * taille);//8
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
     glEnd();
 
@@ -339,70 +359,89 @@ void rocher(float x, float y, float z, double taille) {
 
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(-4.5f * taille, -1.0f * taille, -1.0f * taille);//11
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(-4.5f * taille, -1.0f * taille, z2 * taille);//11
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
 
     glBegin(GL_QUADS);
 
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
 
     glEnd();
 
 
     glBegin(GL_TRIANGLES);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
     glBegin(GL_TRIANGLES);
-    glVertex3f(-4.0f * taille, 1.8f * taille, -1.0f * taille);//10
-    glVertex3f(2.8f * taille, 1.5F * taille, -1.0f * taille);//9
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
+
+    glBegin(GL_QUADS);
+    glVertex3f(-4.6f * taille, -2.0f * taille, zz * taille);
+    glVertex3f(-4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, zz * taille);
+    glEnd();
+
+
+
+
     glBegin(GL_QUADS);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
 
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
-    glVertex3f(2.8f * taille, -2.0F * taille, -1.0f * taille);//7
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
     glEnd();
 
 
     glBegin(GL_TRIANGLES);
-    glVertex3f(-4.0f * taille, -2 * taille, -1.0f * taille);//12
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
 
 
     glPopMatrix();
-
 }
-
 static void genTerrain() {
     glPushMatrix();
     nTexture = 0;
     
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,marron);
-    initTexture();
-    glEnable(GL_TEXTURE_2D);
+    /*initTexture();
+    glEnable(GL_TEXTURE_2D);*/
     
     glNormal3f(0.0F, 1.0F, 0.0F);
-    for (float x = 0; x < tailleMars - 1; x++) {
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0F, 0.0F);
+    glVertex3f(0,0, 0);
+    glTexCoord2f(1.0F, 0.0F);
+    glVertex3f(tailleMars, 0, 0);
+    glTexCoord2f(1.0F, 1.0F);
+    glVertex3f(tailleMars, 0, tailleMars);
+    glTexCoord2f(0.0F, 1.0F);
+    glVertex3f(0, 0, tailleMars);
+    glEnd();
+    /*for (float x = 0; x < tailleMars - 1; x++) {
         for (float z = 0; z < tailleMars - 1; z++) {
             int x_tab = (int)x;
             int z_tab = (int)z;
@@ -418,7 +457,7 @@ static void genTerrain() {
            
             glEnd();
         }
-    }
+    }*/
     glDisable(GL_TEXTURE_2D);
     
     glPopMatrix();
@@ -427,8 +466,8 @@ static void genCote() {
     float y= 100.0F;
     nTexture = 2;
     glPushMatrix();
-    initTexture();
-    glEnable(GL_TEXTURE_2D);
+    /*initTexture();
+    glEnable(GL_TEXTURE_2D);*/
     double mid = tailleMars / 2;
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, texture);
@@ -443,7 +482,7 @@ static int Destroy_rec(int x, int z) {
     int res = 0;
     if (mat_obstacles[x][z] == 1) {
         mat_obstacles[x][z] = -1;
-        printf("destroy x=%d , z= %d\n", x, z);
+        //printf("destroy x=%d , z= %d\n", x, z);
         res = 1;
     }
     return res;
@@ -485,20 +524,38 @@ static void DestroyPierre(int x, int z) {
 static void PlacerObjets(void) {
     glPushMatrix();
     glScalef(1.0F, 1.0F, 1.0F);
-    float y = 11.0;
+    float y = 7.0;
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
     int x = 3; int z = 3; int c = 4;
-    x = tailleMars/2+30;//Pos robot initial +30
-    z = tailleMars / 2 ;
+    x = tailleMars/2+20;//Pos robot initial +30
+    z = tailleMars / 2 +30;
     glTranslatef(x,y, z);
+    /*double dist = sqrt((x - posRobot.x) * (x - posRobot.x) + (z - posRobot.z) * (z - posRobot.z));
+    if (dist < TR1*5) PAS construire*/
     if (mat_obstacles[x][z] != -1) {
-        modifMat(x, z, c, 1);
-        glutSolidCube(c);
-       /*  glTranslatef(x+30, 0.0, z+30);
-           rocher(x+30,0.0,z+30, c/2);
-         glTranslatef(x-30, 0.0, z-30);*/
+        /*modifMat(x, z, c, 1);
+        glutSolidCube(c);*/
+        // glTranslatef(x+30, 0.0, z+30);
+        modifMatR1(x, z, TR1, 1);
+        rocher(x,0.0,z, TR1);
+         //glTranslatef(x-30, 0.0, z-30);
     }
-   for(int i=0;i<3;i++) {
+    glTranslatef(-25, 0.0, 25);
+    x -= 27;
+    z += 27;
+    if (mat_obstacles[x][z] != -1) {
+        modifMatR1(x, z, TR1, 1);
+        rocher(x, 0.0, z, TR1);
+    }
+
+    glTranslatef(0.0, 0.0, -100);
+    x -= 0;
+    z -= 100;
+    if (mat_obstacles[x][z] != -1) {
+        modifMatR2(x, z, TR2, 1);
+        rocher2(x, 0.0, z, TR2);
+    }
+   /*for (int i = 0; i<3; i++) {
        if (i == 0) {
            glTranslatef(-5, 0.0, 10);
            x -= 5;
@@ -515,18 +572,11 @@ static void PlacerObjets(void) {
            z += 5;
        }
        if (mat_obstacles[x][z] != -1) {
-           modifMat(x, z, c, 1);
-           glutSolidCube(c);
+           modifMatR1(x, z, TR1, 1);
+           rocher(x, 0.0, z, TR1);
        }
-    }
-    /*glTranslatef(-5, 0.0, 10);
-    glutSolidCube(c);
-    x -= 5; z += 10;
-    modifMat(x, z, c, 1);
-    glTranslatef(-5, 0.0, 5);
-    glutSolidCube(c);
-    glTranslatef(-10, 0.0, 5);
-    glutSolidCube(c);*/
+    }*/
+   /*
    for (int i = 0; i < 3; i++) {
        if (i == 0) {
            glTranslatef(-5, 0.0, -10);
@@ -547,13 +597,8 @@ static void PlacerObjets(void) {
            modifMat(x, z, c, 1);
            glutSolidCube(c);
        }
-   }
-    /*glTranslatef(-5, 0.0, -10);
-    glutSolidCube(c);
-    glTranslatef(-5, 0.0, -5);
-    glutSolidCube(c);
-    glTranslatef(-10, 0.0, -5);
-    glutSolidCube(c);*/
+   }*/
+    /*
    for (int i = 0; i < 3; i++) {
        if (i == 0) {
            glTranslatef(5, 0.0, -5);
@@ -574,14 +619,8 @@ static void PlacerObjets(void) {
            modifMat(x, z, c, 1);
            glutSolidCube(c);
        }
-   }
-    /*glTranslatef(5, 0.0, -5);
-    glutSolidCube(c);
-    glTranslatef(5, 0.0, -5);
-    glutSolidCube(c);
-    glTranslatef(10, 0.0, -10);
-    glutSolidCube(c);*/
-
+   }*/
+   /*
    for (int i = 0; i < 3; i++) {
        if (i == 0) {
            glTranslatef(10, 0.0, 5);
@@ -602,35 +641,14 @@ static void PlacerObjets(void) {
            modifMat(x, z, c, 1);
            glutSolidCube(c);
        }
-   }
-
+   } */
+ 
   /*  glTranslatef(10, 0.0, 5);
     glutSolidCube(c);
     glTranslatef(5, 0.0, 5);
     glutSolidCube(c);
     glTranslatef(5, 0.0, 10);
     glutSolidCube(c);*/
-
-   /* glTranslatef(x, 3.0, z);
-    if (mat_obstacles[x][z] != -1) {
-        modifMat(x, z, c, 1);
-        glutSolidCube(c);
-    }
-    x += 9;
-    z += 7;
-    while (x < 70) {
-        glTranslatef(9, 0.0, 7);
-        if (mat_obstacles[x][z] != -1) {
-            modifMat(x, z, c, 1);
-            glutSolidCube(c);
-        }
-        x += 9;
-        z += 7;
-    }*/
-    /*glTranslatef(avX, avY, avZ);
-    glutSolidSphere(3.5, 250, 250);
-    glTranslatef(avX+10, avY, avZ+5);
-    glutSolidSphere(2.5, 150, 150);*/
     glPopMatrix();
 }
 
@@ -879,7 +897,8 @@ static void scene(void) {
     PlacerObjets();
     //ROBOT
       glPushMatrix();
-      posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z];
+      //posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z];
+      posRobot.y =4.0;
       glTranslatef(posRobot.x, posRobot.y, posRobot.z);
       glRotatef(rotaR, 0.0f, 1.0F, 0.0f);
     glPushMatrix();
@@ -1021,8 +1040,10 @@ static void keyboard(unsigned char key, int x, int y) {
             anim = false;
         }
         else {
-            ymin = yMat[(int)posRobot.x][(int)posRobot.z];
-            maxSaut = ymin+12.0;
+            if (!anim) {
+                ymin = yMat[(int)posRobot.x][(int)posRobot.z];
+                maxSaut = ymin + 12.0;
+            }
             startSaut = std::chrono::system_clock::now();
             glutIdleFunc(idle);
             anim = true;

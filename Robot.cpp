@@ -48,29 +48,29 @@ static void cylindre(double h, double r, int n, int m) {
     glPopMatrix();
 }
 
-void brasRobot(float r1, float r2,bool droite) {
-   
+void brasRobot(float r1, float r2, bool droite, float taille) {
+
     if (droite) {
         glPushMatrix();
-        glTranslatef(0.0f, 1.0f, 0.0f);
+        glTranslatef(0.0f, taille / 9 + taille / 6, 0.0f);
         glRotatef(r1, 0.0f, 1.0f, 0.0f);
-        glTranslatef(2.5f, 0.0f, 0.0f);
+        glTranslatef(taille / 3.6, 0.0f, 0.0f);
         glPushMatrix();
-      /*  glScalef(2.0f, 1.0f, 1.0f);
-        glutSolidCube(1.0);*/
+        /*  glScalef(2.0f, 1.0f, 1.0f);
+          glutSolidCube(1.0);*/
         glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
-        cylindre(3.0, 0.5, 12, 12);
+        cylindre(taille / 3, taille / 3 / 3 / 2, 12, 12);
 
         glPopMatrix();
-        glTranslatef(1.5f, 0.0f, 0.0f);
+        glTranslatef(taille / 3 / 2, 0.0f, 0.0f);
         glRotatef(r2, 0.0f, 1.0f, 0.0f);
-        glTranslatef(1.0f, 0.0f, 0.0f);
+        glTranslatef(taille / 3 / 2, 0.0f, 0.0f);
         glPushMatrix();
         glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
-        cylindre(3.0, 0.4, 12, 12);
+        cylindre(taille / 3, taille / 18 - taille / 90, 12, 12);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-        glTranslatef(0.0f, -1.7f, 0.0f);
-        glutSolidSphere(0.6,20,20);
+        glTranslatef(0.0f, -taille / 6 - taille / 45, 0.0f);
+        glutSolidSphere(taille / 18 + taille / 45, 20, 20);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
         /*glScalef(2.0f, 0.8f, 0.8f);
         glutSolidCube(1.0);*/
@@ -79,27 +79,27 @@ void brasRobot(float r1, float r2,bool droite) {
     }
     else {
         glPushMatrix();
-        glTranslatef(0.0f, 1.0f, 0.0f);
+        glTranslatef(0.0f, taille / 9 + taille / 6, 0.0f);
         glRotatef(r1, 0.0f, 1.0f, 0.0f);
-        glTranslatef(-2.5f, 0.0f, 0.0f);
+        glTranslatef(-taille / 3.6, 0.0f, 0.0f);
         glPushMatrix();
-       /* glScalef(2.0f, 1.0f, 1.0f);
-        glutSolidCube(1.0);*/
+        /* glScalef(2.0f, 1.0f, 1.0f);
+         glutSolidCube(1.0);*/
         glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
-        cylindre(3.0, 0.5, 12, 12);
+        cylindre(taille / 3, taille / 3 / 3 / 2, 12, 12);
         glPopMatrix();
-        glTranslatef(-1.5f, 0.0f, 0.0f);
+        glTranslatef(-taille / 3 / 2, 0.0f, 0.0f);
         glRotatef(r2, 0.0f, 1.0f, 0.0f);
-        glTranslatef(-1.0f, 0.0f, 0.0f);
+        glTranslatef(-taille / 3 / 2, 0.0f, 0.0f);
         glPushMatrix();
         /*glScalef(2.0f, 0.8f, 0.8f);
         glutSolidCube(1.0);*/
         glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
-       
-        cylindre(3.0, 0.4, 12, 12);
+
+        cylindre(taille / 3, taille / 18 - taille / 90, 12, 12);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-        glTranslatef(0.0f, 1.7f, 0.0f);
-        glutSolidSphere(0.6, 20, 20);
+        glTranslatef(0.0f, taille / 6 + taille / 45, 0.0f);
+        glutSolidSphere(taille / 18 + taille / 45, 20, 20);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
         glPopMatrix();
         glPopMatrix();
@@ -109,53 +109,54 @@ void brasRobot(float r1, float r2,bool droite) {
 }
 
 
-void cube() {
-    glPushMatrix();    
+void cube(float taille) {
+    glPushMatrix();
+    glTranslatef(0.0f, taille / 3 / 2, 0.0f);
     float gris[4] = { 0.5F,0.5F,0.5F,1.0F };
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-   
-    glutSolidCube(3.0);
-   
+
+    glutSolidCube(taille / 3);
+
     glPopMatrix();
-   
+
 
 }
 
-void cou() {
+void cou(float taille) {
     glPushMatrix();
-    glTranslatef(0.0f, 2.5f, 0.0f);
+    glTranslatef(0.0f, ((taille / 3)) + (taille / 3 / 2) / 2, 0.0f);
     glPushMatrix();
-    glScalef(1.0F, 2.0F, 1.0F);
+    glScalef(taille / 3 / 3, (taille / 3) / 2, 1.0F);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, jaune);
     glutSolidCube(1);
-   
+
     glPopMatrix();
     glPopMatrix();
 
-    }
+}
 
 
 
 
-void tete(){
+void tete(float taille) {
     glPushMatrix();
-    glTranslatef(0.0F, 4.0F, 0.0F);
+    glTranslatef(0.0F, ((taille / 3)) + (taille / 3 / 2) + taille / 25, 0.0F);
     glPushMatrix();
-    glTranslatef(0.8f, 0.0f, 0.0f);
+    glTranslatef(taille / 3 / 3 - taille / 45, 0.0f, 0.0f);
     glPushMatrix();
-    glutSolidSphere(0.5,10,10);
-    glPopMatrix();
-    glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
-    cylindre(1.5, 0.6, 12, 12);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glTranslatef(-0.8f, 0.0f, 0.0f);
-    glPushMatrix();
-    glutSolidSphere(0.5, 10, 10);
+    glutSolidSphere(taille / 3 / 3 / 2, 10, 10);
     glPopMatrix();
     glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
-    cylindre(1.5, 0.6, 12, 12);
+    cylindre(taille / 3 / 2 + taille / 45, taille / 3 / 3 / 2, 12, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-taille / 3 / 3 + taille / 45, 0.0f, 0.0f);
+    glPushMatrix();
+    glutSolidSphere(taille / 3 / 3 / 2, 10, 10);
+    glPopMatrix();
+    glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
+    cylindre(taille / 3 / 2 + taille / 45, taille / 3 / 3 / 2, 12, 12);
 
     glPopMatrix();
     glPopMatrix();
@@ -169,21 +170,278 @@ void pied() {
     glPopMatrix();
 }
 
+void pied2(float _x, float _y, float _z, float taille) {
+
+    glPushMatrix();
+
+    glTranslatef(_x, _y, _z);
+    glRotatef(90, 0, 1, 0);
+    float x = taille / 3 / 2;
+    float y = taille / 3 / 2 - taille / 45;
+    float z = taille / 18;
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-x, -y, z); //1
+    glVertex3f(x, -y, z);//2
+    glVertex3f(0.0f, y, z);//3
+    glEnd();
+
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-x, -y, -0.5); //4
+    glVertex3f(x, -y, -0.5);//5
+    glVertex3f(0.0f, y, -0.5);//6
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(-x, -y, -0.5); //4
+    glVertex3f(x, -y, -0.5);//5
+    glVertex3f(x, -y, z);//2
+    glVertex3f(-x, -y, z); //1
+    glEnd();
+
+
+    glBegin(GL_QUADS);
+    glVertex3f(0.0f, y, z);//3
+    glVertex3f(0.0f, y, -0.5);//6
+    glVertex3f(x, -y, -0.5);//5
+    glVertex3f(x, -y, z);//2
+    glEnd();
+
+
+
+    glBegin(GL_QUADS);
+    glVertex3f(0.0f, y, z);//3
+    glVertex3f(0.0f, y, -0.5);//6
+    glVertex3f(-x, -y, -0.5); //4
+    glVertex3f(-x, -y, z); //1
+    glEnd();
+
+
+    glPopMatrix();
+
+}
+
+void rocher2(float x, float y, float z, float taille) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glScalef(1, 1, 1);
+
+    glBegin(GL_POLYGON);
+    glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glVertex3f(16 * taille, 0 * taille, 3 * taille); //6
+    glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
+    glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
+    glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
+    glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
+    glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glEnd();
+
+    glBegin(GL_QUADS); //15
+    glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
+    glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
+
+    glEnd();
+
+
+    glBegin(GL_QUADS); //16
+    glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
+
+
+    glEnd();
+
+    glBegin(GL_TRIANGLES); //17
+    glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glEnd();
+
+
+    glBegin(GL_POLYGON); //18
+    glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glVertex3f(16 * taille, 0 * taille, 3 * taille); //6
+    glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
+    glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+
+    glEnd();
+
+    glBegin(GL_QUADS); //19
+    glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
+
+    glEnd();
+
+    glBegin(GL_QUADS); //20
+    glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
+
+    glEnd();
+
+    glBegin(GL_QUADS); //20
+    glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
+    glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
+
+    glEnd();
+
+    glBegin(GL_QUADS); //19
+    glVertex3f(0 * taille, 0 * taille, 8 * taille); //7
+    glVertex3f(0 * taille, 0 * taille, 0 * taille); //8
+    glVertex3f(18 * taille, 0 * taille, 0* taille); //14
+    glVertex3f(18 * taille, 0 * taille, 8 * taille); //13
+
+    glEnd();
+
+
+    glPopMatrix();
+}
+
+
+void rocher(float x, float y, float z, float taille) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glScalef(1, 1, 1);
+   // glRotatef(-45, 1.0f, 0.0f, 0.0f);
+    float zz = 2.0f;
+    float z2 = -2.0f;
+    glBegin(GL_POLYGON);
+    glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+    glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
+    glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+    glEnd();
+
+    glBegin(GL_POLYGON);
+    glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(3.0f * taille, -0.5F * taille, z2 * taille);//8
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glEnd();
+
+    glBegin(GL_POLYGON);
+
+    glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(-4.5f * taille, -1.0f * taille, z2 * taille);//11
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glEnd();
+
+    glBegin(GL_QUADS);
+
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+
+    glEnd();
+
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glEnd();
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glEnd();
+
+   
+    glBegin(GL_QUADS);
+    glVertex3f(-4.6f * taille, -2.0f * taille, zz * taille);
+    glVertex3f(-4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, z2 * taille);
+    glVertex3f(4.6f * taille, -2.0f * taille, zz * taille);
+    glEnd();
+
+
+  
+
+    glBegin(GL_QUADS);
+    glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+
+    glEnd();
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
+    glEnd();
+
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+    glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glEnd();
+
+
+    glPopMatrix();
+
+}
+
+
+void robot(float taille) {
+    glPushMatrix();
+    pied2(-taille / 3 / 2 - 0.5, 0, 0, taille);
+    pied2(taille / 3 / 2 + 0.5, 0, 0, taille);
+    cube(taille);
+    cou(taille);
+    tete(taille);
+
+    glPushMatrix();
+    glScalef(0.8f, 1.0f, 1.0f);
+    brasRobot(r1, -r2, droite, taille);
+    brasRobot(r1, r2, !droite, taille);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
 /* Scene dessinee                               */
 
 static void scene(void) {
+   // robot(10.0f);
+    //robot(18);
+   /* glPushMatrix();
+    rocher2(-10, 0, 0, 1);
+    glPopMatrix();*/
     glPushMatrix();
-    cube();
-    cou();
-    tete();
-    pied();
-    glPushMatrix();
-    glScalef(0.8f, 1.0f, 1.0f);
-    brasRobot(r1, -r2,droite);
-    brasRobot(r1,r2,!droite);
-    glPopMatrix();
-   
-    glPopMatrix();
+     rocher(0, -5, 0,2);
+     glPopMatrix();
+
 }
 
 /* Fonction executee lors d'un rafraichissement */
@@ -200,7 +458,7 @@ static void display(void) {
     glRotatef(angley, 0.0f, 1.0f, 0.0f);
     glRotatef(angle, 1.0f, 0.0f, 0.0f);
     glRotatef(anglex, 1.0f, 0.0f, 0.0f);
-    glScalef(0.2f, 0.2f, 0.2f);
+    glScalef(0.1f, 0.1f, 0.1f);
     scene();
     glPopMatrix();
     glFlush();
@@ -348,7 +606,7 @@ static void mouse(int button, int state, int x, int y) {
 
 static void mouseMotion(int x, int y) {
     printf("MM %4d %4d\n", x, y);
-  
+
     glutPostRedisplay();
 }
 

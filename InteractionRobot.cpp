@@ -478,8 +478,6 @@ static int Destroy_rec(int x, int z) {
 }
 /* Destruction d'un rocher */
 static void DestroyPierre(int x, int z) {
-    //ajouter avec rota + largeur du robot
-    int l = 4/2;
     int r = 1;
     int x2 = x;
     int z2 = z;

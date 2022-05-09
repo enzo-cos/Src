@@ -13,3 +13,8 @@ Le robot peut avancer et reculer grâce aux flèches directionnelles haut et bas
 Le robot peut effectuer un saut sur place avec la touche 'ENTRER' (Ce saut peut fonctionner très lentement, notamment avec les textures)
 Le robot s'arrête au contacte d'un obstacle, mais il peut "détruire" cette obstacle en appuyant 3 fois d'affilé sur la touche 'f' lorsqu'il est collé à cet obstacle.
 Il est possible de modifier le mode d'affichage en appuyant sur la touche 'espace'.
+
+
+Problèmes rencontrées : 
+Lenteur après la mise en place du sol avec relief.
+Lenteur lors de l'utilisation des textures.

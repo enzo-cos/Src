@@ -21,70 +21,62 @@ static int wTy = 480;              // Resolution verticale de la fenetre
 static int wPx = 50;               // Position horizontale de la fenetre
 static int wPy = 50;               // Position verticale de la fenetre
 
+//Variable affichage
 static GLenum face = GL_FRONT_AND_BACK;
 static GLenum mode = GL_FILL;
 static bool anim = false;
 
 
-static bool reculer = false;
-static bool cam = false;
-static bool contrePierre = false;
-static int nbCoup = 0;
-static float rota = 0.0F;
-static float turn = 0.0F;
-static float nbTour = 0.0F;
+static bool reculer = false; //booléen direction robot
+static bool cam = false; //true si caméra 1ère personne, false si caméra 3ème personne
+static bool contrePierre = false; //booléen pour savoir si le robot est collé à un objet
+static int nbCoup = 0; //nombre de coup mis du robot à un rocher
 
+//variable pour la construction du robot
 static float r1 = 0.0f;
 static float r2 = 90.0f;
-static float angle = 0.0f;
-static float angley = 0.0f;
-static float anglex = 0.0f;
 static bool droite = true;
+
+//Tableaux de couleur
 float gris[4] = { 0.5F,0.5F,0.5F,1.0F };
 float jaune[4] = { 1.0F,1.0F,0.0F,1.0F };
 float noir[4] = { 0.0F,0.0F,0.0F,1.0F };
 float marron[4] = { 0.54F,0.27F,0.07F,1.0F };
 
-
-static float c1 = 1.0F;
-static float c2 = 1.0F;
-static float c3 = 1.0F;
-
-static float avX = 20.0F;
-static float avY = 3.0F;
-static float avZ = 20.0F;
-
-
-static double tailleMars = 512.0;
-static float llong = tailleMars / 2.4;
-static float posPmin = tailleMars / 3.43;
-static float posPmax = tailleMars / 1.41;
+//Définition de la taille de la scène
+static double tailleMars = 512.0; //taille
+static int mat_obstacles[512][512] = { 0 }; //Matrice d'obstacles
+//static float mat_posY[512][512] = { 0 }; //matrice pour relief
 static int MiddleMap = tailleMars / 2;
+//RELIEF
+static float** yMat = (float**)calloc(tailleMars + 1, sizeof(float*)); //matrice pour relief
+static int nVaria = 2; //multiplicateur de relief
 
-static int mat_obstacles[512][512] = { 0 };
-static float mat_posY[512][512] = { 0 };
 
-static int rotaR = 0;
-static double prop = 10.0;
-static double toRad = 3.14159 / 180.0;
+static double prop = 10.0; //multiplicateur
+static double toRad = 3.14159 / 180.0; //Passé degré en radiant
 
-Pos3D posRobot = Pos3D(tailleMars / 2, 3.0, tailleMars / 2);
+//ROBOT
+static int rotaRobot = 0; //rotation du robot 
+Pos3D posRobot = Pos3D(tailleMars / 2, 3.0, tailleMars / 2); //Position du robot
+static double tailleRobot = tailleMars/40; //taille du robot
+static double posCameraRobotY = posRobot.y+ tailleRobot*0.6; //Position de la caméra à la 1ère personne en Y
+Dir3D dirRobot = Dir3D(sin(rotaRobot * toRad) * prop, 0.0, cos(rotaRobot * toRad) * prop); //Direction du robot
+//Position de la caméra 3ème personne
+Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 2*tailleRobot, posRobot.z-4*tailleRobot); 
 
-static double tailleRobot = tailleMars/40;
-static double posCameraRobotY = posRobot.y+ tailleRobot*0.6;
-Dir3D dirRobot = Dir3D(sin(rotaR * toRad) * prop, 0.0, cos(rotaR * toRad) * prop);
-Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 30, posRobot.z-30);
-static int rotaYeux = 0.0;
+static int rotaYeux = 0.0; //Rotation des yeux du robot
+static double rotaRoue = 0.0; //Rotation des roues du robot
+static double ecart = tailleMars / 200; //
 
 static int mouseX = 0.0;
 static int mouseY = 0.0;
 
 //Taille pour rochers :
-static int TR1 = tailleRobot / 3;
-static int TR2 = tailleRobot / 6;
+static int TR1 = tailleRobot / 8;
+static int TR2 = tailleRobot / 16;
 
-//Ajout des potions des lumières
-
+//Ajout des positions des lumières
 static float positionhaut[4] = {(float)MiddleMap,80.0F,(float)MiddleMap,0.0F };
 static float positiondroite[4] = { 0.0F,10.0F,-tailleMars,0.0F };
 
@@ -92,7 +84,10 @@ static float diffuse[4] = { 1.0F,1.0F,1.0F,1.0F };
 static float ambiant[4] = { 0.2F,0.2F,0.2F,1.0F };
 static float spec[4] = { 1.0F,1.0F,1.0F,1.0F };
 
-
+//TEXTURE
+static unsigned int textureID = 0;
+static int texture = 1;
+static int nTexture = 0; //Numéro de la texture à déposer
 
 //Saut : 
 static double ymin = 3.0;
@@ -108,18 +103,7 @@ double vitesseSaut = 5.0;
 auto startSaut = std::chrono::system_clock::now();
 
 
-//RELIEF
-static float** yMat=(float**)calloc(tailleMars + 1, sizeof(float*));
-static int nVaria = 2;
-
-
-/* Fonction d'initialisation des parametres     */
-/* OpenGL ne changeant pas au cours de la vie   */
-/* du programme                                 */
-static unsigned int textureID = 0;
-static int texture =1;
-static int nTexture = 0;
-
+/* Initialisation des textures */
 static void initTexture(void) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(1, &textureID);
@@ -149,6 +133,9 @@ static void initTexture(void) {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
+/*
+* Initialisation de la matrice des positions y pour le relief
+*/
 static float** getYPos(float** y_pos, int alt_max, int rec, int xmin, int xmax, int zmin, int zmax) {
     if (xmax - xmin <= 1) {
         return y_pos;
@@ -175,7 +162,10 @@ static float** getYPos(float** y_pos, int alt_max, int rec, int xmin, int xmax, 
 
     return y_pos;
 }
-/* n -> taille du sol (doit être une puissance de 2) */
+/* 
+Affectation des valeurs de la matrice yMat
+n -> taille du sol (doit être une puissance de 2) 
+*/
 static void genSol(int n) {
     glPushMatrix();
     if (n < 257) nVaria = 3;
@@ -185,7 +175,7 @@ static void genSol(int n) {
     };
 
     yMat = getYPos(yMat, 20, 0, 0, n, 0, n);
-    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z];
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
     posCam3.y = posRobot.y + 10;
     glPopMatrix();
    /* for (int i = 0; i < n; ++i)
@@ -194,12 +184,14 @@ static void genSol(int n) {
     };
     free(y);*/
 }
+/* Fonction d'initialisation des parametres 
+OpenGL ne changeant pas au cours de la vie 
+du programme  */
 static void init(void) {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2); 
-    //glEnable(GL_LIGHT3);
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
@@ -207,14 +199,7 @@ static void init(void) {
     genSol((int)tailleMars);
 }
 
-static void modifMatCube(int x, int z, int c, int val) {
-    int l = c / 2;
-    for (int i = x - l; i < x + l + 1; i++) {
-        for (int j = z - l; j < z + l + 1; j++) {
-            if (mat_obstacles[i][j] != -1) mat_obstacles[i][j] = val;
-        }
-    }
-}
+/* Modification de la matrice d'obstacles pour le rocher 1*/
 static void modifMatR1(int x, int z, int taille,int val) {
     int longueur = taille * 4.61;
     int larg = taille * 2;
@@ -224,6 +209,7 @@ static void modifMatR1(int x, int z, int taille,int val) {
         }
     }
 }
+/* Modification de la matrice d'obstacles pour le rocher 2 */
 static void modifMatR2(int x, int z, int taille, int val) {
     int longueur = taille * 18;
     int larg = taille * 8;
@@ -233,10 +219,10 @@ static void modifMatR2(int x, int z, int taille, int val) {
         }
     }
 }
-//Point en bas à gauche
+/* Construction du rocher 2 */
 void rocher2(float x, float y, float z, float taille) {
     glPushMatrix();
-    //glTranslatef(x, y, z);
+    glTranslatef(x, y, z);
     glScalef(1, 1, 1);
 
     glBegin(GL_POLYGON);
@@ -328,12 +314,11 @@ void rocher2(float x, float y, float z, float taille) {
 
     glPopMatrix();
 }
-//point au centre, 4,6*taille*2, 2*taille*2
+/* Construction du rocher 1 */
 void rocher(float x, float y, float z, float taille) {
     glPushMatrix();
-    //glTranslatef(x, y, z);
+    glTranslatef(x, y, z);
     glScalef(1, 1, 1);
-    // glRotatef(-45, 1.0f, 0.0f, 0.0f);
     float zz = 2.0f;
     float z2 = -2.0f;
     glBegin(GL_POLYGON);
@@ -422,16 +407,17 @@ void rocher(float x, float y, float z, float taille) {
 
     glPopMatrix();
 }
+/* Génération du terrain */
 static void genTerrain() {
     glPushMatrix();
     nTexture = 0;
     
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,marron);
-    /*initTexture();
-    glEnable(GL_TEXTURE_2D);*/
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
     
     glNormal3f(0.0F, 1.0F, 0.0F);
-    glBegin(GL_QUADS);
+   /* glBegin(GL_QUADS);
     glTexCoord2f(0.0F, 0.0F);
     glVertex3f(0,0, 0);
     glTexCoord2f(1.0F, 0.0F);
@@ -440,8 +426,9 @@ static void genTerrain() {
     glVertex3f(tailleMars, 0, tailleMars);
     glTexCoord2f(0.0F, 1.0F);
     glVertex3f(0, 0, tailleMars);
-    glEnd();
-    /*for (float x = 0; x < tailleMars - 1; x++) {
+    glEnd();*/
+
+    for (float x = 0; x < tailleMars - 1; x++) {
         for (float z = 0; z < tailleMars - 1; z++) {
             int x_tab = (int)x;
             int z_tab = (int)z;
@@ -457,17 +444,18 @@ static void genTerrain() {
            
             glEnd();
         }
-    }*/
+    }
     glDisable(GL_TEXTURE_2D);
     
     glPopMatrix();
 }
+/* Génération des cotés de la map (étoiles) */
 static void genCote() {
     float y= 100.0F;
     nTexture = 2;
     glPushMatrix();
-    /*initTexture();
-    glEnable(GL_TEXTURE_2D);*/
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
     double mid = tailleMars / 2;
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, texture);
@@ -478,6 +466,7 @@ static void genCote() {
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
+/* Fonction récursive pour supprimer un rocher */
 static int Destroy_rec(int x, int z) {
     int res = 0;
     if (mat_obstacles[x][z] == 1) {
@@ -487,6 +476,7 @@ static int Destroy_rec(int x, int z) {
     }
     return res;
 }
+/* Destruction d'un rocher */
 static void DestroyPierre(int x, int z) {
     //ajouter avec rota + largeur du robot
     int l = 4/2;
@@ -521,137 +511,39 @@ static void DestroyPierre(int x, int z) {
             
     }
 }
-static void PlacerObjets(void) {
+/* Placement des rochers */
+static void PlacerRochers(void) {
     glPushMatrix();
     glScalef(1.0F, 1.0F, 1.0F);
-    float y = 7.0;
+    float y = 0.0;
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-    int x = 3; int z = 3; int c = 4;
+    int x, z = 0;
     x = tailleMars/2+20;//Pos robot initial +30
     z = tailleMars / 2 +30;
-    glTranslatef(x,y, z);
     /*double dist = sqrt((x - posRobot.x) * (x - posRobot.x) + (z - posRobot.z) * (z - posRobot.z));
     if (dist < TR1*5) PAS construire*/
     if (mat_obstacles[x][z] != -1) {
-        /*modifMat(x, z, c, 1);
-        glutSolidCube(c);*/
-        // glTranslatef(x+30, 0.0, z+30);
         modifMatR1(x, z, TR1, 1);
-        rocher(x,0.0,z, TR1);
-         //glTranslatef(x-30, 0.0, z-30);
+        y = yMat[x][z]+TR1*1.6;
+        rocher(x,y,z, TR1);
     }
-    glTranslatef(-25, 0.0, 25);
     x -= 27;
     z += 27;
     if (mat_obstacles[x][z] != -1) {
         modifMatR1(x, z, TR1, 1);
-        rocher(x, 0.0, z, TR1);
+        y = yMat[x][z]+ TR1 * 1.6;
+        rocher(x, y, z, TR1);
     }
-
-    glTranslatef(0.0, 0.0, -100);
     x -= 0;
     z -= 100;
     if (mat_obstacles[x][z] != -1) {
         modifMatR2(x, z, TR2, 1);
-        rocher2(x, 0.0, z, TR2);
+        y = yMat[x][z]-TR2*0.4;
+        rocher2(x, y, z, TR2);
     }
-   /*for (int i = 0; i<3; i++) {
-       if (i == 0) {
-           glTranslatef(-5, 0.0, 10);
-           x -= 5;
-           z += 10;
-       }
-       else if (i == 2) {
-           glTranslatef(-10, 0.0, 5);
-           x -= 10;
-           z += 5;
-       }
-       else {
-           glTranslatef(-5, 0.0, 5);
-           x -= 5;
-           z += 5;
-       }
-       if (mat_obstacles[x][z] != -1) {
-           modifMatR1(x, z, TR1, 1);
-           rocher(x, 0.0, z, TR1);
-       }
-    }*/
-   /*
-   for (int i = 0; i < 3; i++) {
-       if (i == 0) {
-           glTranslatef(-5, 0.0, -10);
-           x -= 5;
-           z -= 10;
-       }
-       else if (i == 2) {
-           glTranslatef(-10, 0.0, -5);
-           x -= 10;
-           z -= 5;
-       }
-       else {
-           glTranslatef(-5, 0.0, -5);
-           x -= 5;
-           z -= 5;
-       }
-       if (mat_obstacles[x][z] != -1) {
-           modifMat(x, z, c, 1);
-           glutSolidCube(c);
-       }
-   }*/
-    /*
-   for (int i = 0; i < 3; i++) {
-       if (i == 0) {
-           glTranslatef(5, 0.0, -5);
-           x += 5;
-           z -= 5;
-       }
-       else if (i == 2) {
-           glTranslatef(10, 0.0, -10);
-           x += 10;
-           z -= 10;
-       }
-       else {
-           glTranslatef(5, 0.0, -5);
-           x += 5;
-           z -= 5;
-       }
-       if (mat_obstacles[x][z] != -1) {
-           modifMat(x, z, c, 1);
-           glutSolidCube(c);
-       }
-   }*/
-   /*
-   for (int i = 0; i < 3; i++) {
-       if (i == 0) {
-           glTranslatef(10, 0.0, 5);
-           x += 10;
-           z += 5;
-       }
-       else if (i == 2) {
-           glTranslatef(5, 0.0, 10);
-           x += 5;
-           z += 10;
-       }
-       else {
-           glTranslatef(5, 0.0, 5);
-           x += 5;
-           z += 5;
-       }
-       if (mat_obstacles[x][z] != -1) {
-           modifMat(x, z, c, 1);
-           glutSolidCube(c);
-       }
-   } */
- 
-  /*  glTranslatef(10, 0.0, 5);
-    glutSolidCube(c);
-    glTranslatef(5, 0.0, 5);
-    glutSolidCube(c);
-    glTranslatef(5, 0.0, 10);
-    glutSolidCube(c);*/
     glPopMatrix();
 }
-
+//CONSTRUCTION DU ROBOT
 static void cylindre(double h, double r, int n, int m) {
     glPushMatrix();
     glRotatef(90.0F, 1.0f, 0.0F, 0.0F);
@@ -662,7 +554,6 @@ static void cylindre(double h, double r, int n, int m) {
     gluDeleteQuadric(qobj);
     glPopMatrix();
 }
-
 void brasRobot(float r1, float r2, bool droite, double taille) {
 
     if (droite) {
@@ -722,7 +613,6 @@ void brasRobot(float r1, float r2, bool droite, double taille) {
     }
 
 }
-
 void cube(double taille) {
     glPushMatrix();
     glTranslatef(0.0f, taille / 3 / 2, 0.0f);
@@ -735,7 +625,6 @@ void cube(double taille) {
 
 
 }
-
 void cou(double taille) {
     glPushMatrix();
     glTranslatef(0.0f, ((taille / 3)) + (taille / 3 / 2) / 2, 0.0f);
@@ -748,7 +637,6 @@ void cou(double taille) {
     glPopMatrix();
 
 }
-
 void tete(double taille) {
     glPushMatrix();
     glTranslatef(0.0F, ((taille / 3)) + (taille / 3 / 2) + taille / 25, 0.0F);
@@ -769,27 +657,25 @@ void tete(double taille) {
     glPopMatrix();
     glRotatef(90.0f, 90.0f, 0.0f, 1.0F);
     glRotatef(rotaYeux, 1.0, 0.0, 0.0);
-    printf("rotaYeux : %d\n", rotaYeux);
     cylindre(taille / 3 / 2 + taille / 45, taille / 3 / 3 / 2, 12, 12);
 
     glPopMatrix();
     glPopMatrix();
 
 }
-
 void pied() {
     glPushMatrix();
     glTranslatef(0.0f, -2.0f, 0.f);
     glutSolidSphere(2.5, 20, 20);
     glPopMatrix();
 }
-
 void pied2(float _x, float _y, float _z, double taille) {
 
     glPushMatrix();
 
     glTranslatef(_x, _y, _z);
     glRotatef(90, 0, 1, 0);
+    glRotatef(rotaRoue, 0, 0, 1);
     float x = taille / 3 / 2;
     float y = taille / 3 / 2 - taille / 45;
     float z = taille / 18;
@@ -834,7 +720,6 @@ void pied2(float _x, float _y, float _z, double taille) {
     glPopMatrix();
 
 }
-
 void robot(double taille) {
     glPushMatrix();
     pied2(-taille / 3 / 2 - 0.5, 0, 0, taille);
@@ -851,10 +736,9 @@ void robot(double taille) {
 
     glPopMatrix();
 }
-
+//FIN CONSTRUCTION ROBOT
+/* Savoir si le robot est bloqué par un obstacle ou par la taille de la map */
 static int getLimite(int newposX, int newposZ) {
-    //limite carré
-    //if (newposX < 1 || newposZ <1 || newposX > tailleMars - 2 || newposZ > tailleMars - 2) return -1;
     //limite rayon
     double mid = tailleMars / 2;
     double dist = 0.0;
@@ -863,6 +747,7 @@ static int getLimite(int newposX, int newposZ) {
         printf("Limite de la map atteinte\n");
         return -1;
     }
+    //Vérification obstacles
     if (mat_obstacles[newposX][newposZ] == 1) {
         printf("impossible d'avancer, un obstacle est present\n");
         contrePierre = true;
@@ -871,7 +756,7 @@ static int getLimite(int newposX, int newposZ) {
     contrePierre = false;
     return 0;
 }
-/* Scene dessinee  */
+/* Avancer d'un pas le robot  */
 static void avancer() {
     int newPosX = (int)(posRobot.x + dirRobot.x / prop);
     int newPosZ = (int)(posRobot.z + dirRobot.z / prop);
@@ -879,31 +764,44 @@ static void avancer() {
     if (getLimite(newPosX,newPosZ)!=0) return;
     posRobot.x += (dirRobot.x / prop);
     posRobot.z += (dirRobot.z / prop);
+    double currY = posRobot.y;
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
+    double diffY = posRobot.y - currY;
+    printf("diff y = %f\n", diffY);
+    if (diffY > 0)
+        rotaRoue -= 3.0;
+    else if (diffY > 0)
+        rotaRoue += 3.0;
+    else rotaRoue = 0.0;
 }
-
+/* reculer d'un pas le robot  */
 static void recule() {
     int newPosX = (int)(posRobot.x - dirRobot.x / prop);
     int newPosZ = (int)(posRobot.z - dirRobot.z / prop);
     if (getLimite(newPosX, newPosZ) != 0) return;
     posRobot.x -= (dirRobot.x / prop);
     posRobot.z -= (dirRobot.z / prop);
+    double currY = posRobot.y;
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
+    double diffY = posRobot.y - currY;
+    printf("diff y = %f\n", diffY);
+    if (diffY > 0)
+        rotaRoue += 3.0;
+    else if (diffY > 0)
+        rotaRoue -= 3.0;
+    else rotaRoue = 0.0;
 }
-
+/* Dessiner Scene  */
 static void scene(void) {
     glPushMatrix();
     genTerrain();
-    //genSol((int)tailleMars);
     genCote();
-    PlacerObjets();
+    PlacerRochers();
     //ROBOT
       glPushMatrix();
-      //posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z];
-      posRobot.y =4.0;
       glTranslatef(posRobot.x, posRobot.y, posRobot.z);
-      glRotatef(rotaR, 0.0f, 1.0F, 0.0f);
-    glPushMatrix();
+      glRotatef(rotaRobot, 0.0f, 1.0F, 0.0f);
      robot(tailleRobot);
-    glPopMatrix();
     glPopMatrix();
     //FIN ROBOT
     glPopMatrix();
@@ -911,9 +809,8 @@ static void scene(void) {
 
 /* Fonction executee lors d'un rafraichissement */
 /* de la fenetre de dessin                      */
-
 static void display(void) {
-    printf("D\n");
+    //printf("D\n");
     posCameraRobotY = posRobot.y + tailleRobot*0.6;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(face, mode);
@@ -947,7 +844,7 @@ static void display(void) {
         gluLookAt(posCam3.x, posCam3.y, posCam3.z, posRobot.x, posRobot.y, posRobot.z, 0.0, 1.0, 0.0);
     }
     else { //1ère personne
-       gluLookAt(posRobot.x+(dirRobot.x/5), posCameraRobotY, posRobot.z+ (dirRobot.z / 5), posRobot.x + dirRobot.x, posCameraRobotY+dirRobot.y, posRobot.z+ dirRobot.z, 0.0, 1.0, 0.0);
+       gluLookAt((double)posRobot.x+(dirRobot.x/5), posCameraRobotY, (double)posRobot.z+ (dirRobot.z / 5), (double)posRobot.x + dirRobot.x, posCameraRobotY+dirRobot.y, (double)posRobot.z+ dirRobot.z, 0.0, 1.0, 0.0);
     }
 
     scene();
@@ -961,7 +858,6 @@ static void display(void) {
 
 /* Fonction executee lors d'un changement       */
 /* de la taille de la fenetre OpenGL            */
-
 static void reshape(int wx, int wy) {
     printf("R\n");
     wTx = wx;
@@ -984,18 +880,19 @@ static void reshape(int wx, int wy) {
 
 /* Fonction executee lorsqu'aucun evenement     */
 /* n'est en file d'attente                      */
-
 static void idle(void) {
-    printf("I\n");
-    //saut
+    //printf("I\n");
     
+    //saut
     if (montee) {
+        //Monté du saut
         vitesseSaut = (maxSaut - posRobot.y)/30;
         if (vitesseSaut < 0.004) vitesseSaut = 0.004;
         if (posRobot.y < maxSaut) posRobot.y += vitesseSaut;
         else montee = false;
     }
     else {
+        //Descente du saut en fonction du temps et de la gravité
         auto la = std::chrono::system_clock::now();
         std::chrono::duration<double> t_ec = la - startSaut;
     
@@ -1013,7 +910,6 @@ static void idle(void) {
 
 /* Fonction executee lors de l'appui            */
 /* d'une touche alphanumerique du clavier       */
-
 static void keyboard(unsigned char key, int x, int y) {
     printf("K  %4c %4d %4d\n", key, x, y);
     switch (key) {
@@ -1041,7 +937,7 @@ static void keyboard(unsigned char key, int x, int y) {
         }
         else {
             if (!anim) {
-                ymin = yMat[(int)posRobot.x][(int)posRobot.z];
+                ymin = posRobot.y;
                 maxSaut = ymin + 12.0;
             }
             startSaut = std::chrono::system_clock::now();
@@ -1133,7 +1029,6 @@ static void keyboard(unsigned char key, int x, int y) {
 /* d'une touche speciale du clavier :           */
 /*   - touches de curseur                       */
 /*   - touches de fonction                      */
-
 static void special(int specialKey, int x, int y) {
     printf("S  %4d %4d %4d\n", specialKey, x, y);
     /* Prendre compte largeur robot en avant arrière + en Z + coté du robot
@@ -1143,9 +1038,9 @@ static void special(int specialKey, int x, int y) {
         //Tourner le robot à gauche
         case 100: //fleche gauche
           
-            rotaR = (rotaR + 2) % 360;
-            dirRobot.z = cos(rotaR * toRad) * prop;
-            dirRobot.x = sin(rotaR * toRad) * prop;
+            rotaRobot = (rotaRobot + 2) % 360;
+            dirRobot.z = cos(rotaRobot * toRad) * prop;
+            dirRobot.x = sin(rotaRobot * toRad) * prop;
 
             glutPostRedisplay();
             break;
@@ -1159,9 +1054,9 @@ static void special(int specialKey, int x, int y) {
             break;
         //Tourner le robot à droite
         case 102: //fleche droite
-            rotaR = (rotaR - 2) % 360;
-            dirRobot.z = cos(rotaR * toRad) * prop;
-            dirRobot.x = sin(rotaR * toRad) * prop;
+            rotaRobot = (rotaRobot - 2) % 360;
+            dirRobot.z = cos(rotaRobot * toRad) * prop;
+            dirRobot.x = sin(rotaRobot * toRad) * prop;
 
             glutPostRedisplay();
             break;
@@ -1177,7 +1072,6 @@ static void special(int specialKey, int x, int y) {
 
 /* Fonction executee lors de l'utilisation      */
 /* de la souris sur la fenetre                  */
-
 static void mouse(int button, int state, int x, int y) {
     printf("M  %4d %4d %4d %4d\n", button, state, x, y);
     mouseX = x;
@@ -1187,15 +1081,14 @@ static void mouse(int button, int state, int x, int y) {
 /* Fonction executee lors du passage            */
 /* de la souris sur la fenetre                  */
 /* avec un bouton presse                        */
-
 static void mouseMotion(int x, int y) {
     printf("MM %4d %4d\n", x, y);
     int diffX = mouseX - x;
     int diffY = mouseY - y;
-    rotaR = (rotaR % 360) - (diffX / 2);
-    dirRobot.z = cos(rotaR * toRad) * prop;
-    dirRobot.x = sin(rotaR * toRad) * prop;
-   // printf("Dir Z : %f\nDirX : %f\nDirY : %f\nRotaR = %d", dirRobot.z, dirRobot.x, dirRobot.y,rotaR);
+    rotaRobot = (rotaRobot % 360) - (diffX / 2);
+    dirRobot.z = cos(rotaRobot * toRad) * prop;
+    dirRobot.x = sin(rotaRobot * toRad) * prop;
+   // printf("Dir Z : %f\nDirX : %f\nDirY : %f\nrotaRobot = %d", dirRobot.z, dirRobot.x, dirRobot.y,rotaRobot);
     double n = (-diffY / 2);
     if (dirRobot.y + n < 15.0 && dirRobot.y + n>-15.0) {
         rotaYeux += (diffY / 2); dirRobot.y += n;
@@ -1209,20 +1102,23 @@ static void mouseMotion(int x, int y) {
 /* Fonction executee lors du passage            */
 /* de la souris sur la fenetre                  */
 /* sans bouton presse                           */
-
 static void passiveMouseMotion(int x, int y) {
     printf("PM %4d %4d\n", x, y);
 }
 
 /* Fonction exécutée automatiquement            */
 /* lors de l'exécution de la fonction exit()    */
-
 static void clean(void) {
+    //Libération matrice relief
+    for (int i = 0; i < tailleMars; ++i)
+    {
+        free(yMat[i]);
+    };
+    free(yMat);
     printf("Bye\n");
 }
 
 /* Fonction principale                          */
-
 int main(int argc, char** argv) {
 
     atexit(clean); //exécution d'une fonction (static void clean(void)) lorsque l'application est interrompue par exécution de la fonction standard void exit(int)

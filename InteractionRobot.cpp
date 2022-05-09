@@ -63,7 +63,7 @@ static double tailleRobot = tailleMars/40; //taille du robot
 static double posCameraRobotY = posRobot.y+ tailleRobot*0.6; //Position de la caméra à la 1ère personne en Y
 Dir3D dirRobot = Dir3D(sin(rotaRobot * toRad) * prop, 0.0, cos(rotaRobot * toRad) * prop); //Direction du robot
 //Position de la caméra 3ème personne
-Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 2*tailleRobot, posRobot.z-4*tailleRobot); 
+Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 3*tailleRobot, posRobot.z-4*tailleRobot); 
 
 static int rotaYeux = 0.0; //Rotation des yeux du robot
 static double rotaRoue = 0.0; //Rotation des roues du robot
@@ -73,8 +73,8 @@ static int mouseX = 0.0;
 static int mouseY = 0.0;
 
 //Taille pour rochers :
-static int TR1 = tailleRobot / 8;
-static int TR2 = tailleRobot / 16;
+static int TR1 = tailleRobot / 4;
+static int TR2 = tailleRobot / 10;
 
 //Ajout des positions des lumières
 static float positionhaut[4] = {(float)MiddleMap,80.0F,(float)MiddleMap,0.0F };

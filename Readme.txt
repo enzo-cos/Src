@@ -32,7 +32,7 @@ La troisième est une lumière placée dans les yeux du robot, afin d'éclairer 
 La modélisation des matériaux est effectuée à chaque objet, pour spécifier la couleur diffusée et refléchie des objets. On les retrouve dans les fonctions genTerrain, genCote, robot, rocher et rocher1.
 
 Textures : 
-Les textures sont gérées via la fonction initTexture. On retrouve 3 textures, celle du sol représentant Mars (textMars1.png), celle du ciel représentant les étoiles (etoile3.png) et celle représentant les rochers (rocher1.png). Un numéro de texture est attribué avant l'appel de initTexture pour déterminer la texture convenant à l'objet.
+Les textures sont gérées via la fonction initTexture. On retrouve 3 textures, celle du sol représentant Mars (textMars1.png), celle du ciel représentant les étoiles (etoile3.png) et celle représentant les rochers (rocher2.png). Un numéro de texture est attribué avant l'appel de initTexture pour déterminer la texture convenant à l'objet.
 
 Caméras :
 Deux caméras sont disponibles, la caméra vue Robot (1ère personne) et la caméra à la 3ème personne. On peut alterner les caméras grâce à la touche 'c'. Les paramètres des caméras se situent au début de la fonction display, après le paramètrage des lumières. A cet endroit, nous définissions la position et la direction de la caméra. Afin de respecter la perspective des objets, nous avons également définis la fonction gluPerspective dans la fonction "reshape()".

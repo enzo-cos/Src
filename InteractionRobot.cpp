@@ -126,7 +126,7 @@ static void initTexture(void) {
       //int ry = 16;
         char* nomFichier = "textMars1.png";
         if(nTexture==2) nomFichier = "etoile3.png";
-        else if(nTexture==3) nomFichier = "rocher1.png";
+        else if(nTexture==3) nomFichier = "rocher2.png";
         int rx;
         int ry;
         printf("%s\n", nomFichier);

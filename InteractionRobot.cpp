@@ -25,6 +25,7 @@ static int wPy = 50;               // Position verticale de la fenetre
 static GLenum face = GL_FRONT_AND_BACK;
 static GLenum mode = GL_FILL;
 static bool anim = false;
+static int numAnim = 0;
 
 
 static bool reculer = false; //booléen direction robot
@@ -48,8 +49,11 @@ static double tailleMars = 512.0; //taille
 static int mat_obstacles[512][512] = { 0 }; //Matrice d'obstacles
 //static float mat_posY[512][512] = { 0 }; //matrice pour relief
 static int MiddleMap = tailleMars / 2;
- static int nbRocherMax = tailleMars / 40;
+ static int nbRocherMax = tailleMars / 30;
  int mat_posRocher[300][2];
+ //Placement rocher
+ static int* allX = (int*)calloc(nbRocherMax, sizeof(int));
+ static int* allZ = (int*)calloc(nbRocherMax, sizeof(int));
 //RELIEF
 static float** yMat = (float**)calloc(tailleMars + 1, sizeof(float*)); //matrice pour relief
 static int nVaria = 2; //multiplicateur de relief
@@ -69,14 +73,17 @@ Pos3D posCam3 = Pos3D(posRobot.x, posRobot.y + 3*tailleRobot, posRobot.z-4*taill
 
 static int rotaYeux = 0.0; //Rotation des yeux du robot
 static double rotaRoue = 0.0; //Rotation des roues du robot
-static double ecart = tailleMars / 200; //
+static double ecart = tailleMars / 200; 
+static int rotaBras = 0.0;//Rotation pour frappe
+static bool endFrappe = false;
 
 static int mouseX = 0.0;
 static int mouseY = 0.0;
 
 //Taille pour rochers :
 static int TR1 = tailleRobot / 4;
-static int TR2 = tailleRobot / 10;
+static int TR2 = tailleRobot / 6;
+
 
 
 //Ajout des positions des lumières
@@ -105,6 +112,10 @@ double vitesseSaut = 5.0;
 //double forceSaut = (accelSaut + graviteMars) * poidsRobot;//force= (a+g)*M
 auto startSaut = std::chrono::system_clock::now();
 
+//Frappe
+
+
+
 
 /* Initialisation des textures */
 static void initTexture(void) {
@@ -115,6 +126,7 @@ static void initTexture(void) {
       //int ry = 16;
         char* nomFichier = "textMars1.png";
         if(nTexture==2) nomFichier = "etoile3.png";
+        else if(nTexture==3) nomFichier = "rocher1.png";
         int rx;
         int ry;
         printf("%s\n", nomFichier);
@@ -178,7 +190,8 @@ static void genSol(int n) {
     };
 
     yMat = getYPos(yMat, 20, 0, 0, n, 0, n);
-    //posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z] + ecart;
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z] + ecart;
+    //posRobot.y = 4;
     posCam3.y = posRobot.y + 10;
     glPopMatrix();
    /* for (int i = 0; i < n; ++i)
@@ -187,23 +200,18 @@ static void genSol(int n) {
     };
     free(y);*/
 }
+/* Obtenir les positions des rochers */
 void placeRockRandomly() {
     glPushMatrix();
     int mid = tailleMars / 2;
 
     int x, z;
     int nbRocherAjouter = 0;
-    /*int* allX = (int*)calloc(nbRocherMax, sizeof(int));
-    int* allZ = (int*)calloc(nbRocherMax, sizeof(int));*/
-    int allX[512];
-    int allZ[512];
 
     int distVersCentre;
-    int posMax = (int)tailleMars - (int)TR1 * 6;
+    int posMax = (int)tailleMars - (int)TR1 * 10;
     int posMin = TR1 * 10;
     int distMinEntreDeux = TR1 * 20;
-
-
     do {
         do {
             x = rand() % ((int)tailleMars + 1);
@@ -211,7 +219,7 @@ void placeRockRandomly() {
             int diffX = x - mid;
             int diffZ = z - mid;
             distVersCentre = sqrt(diffX * diffX + diffZ * diffZ);
-        } while (distVersCentre <= posMin && distVersCentre >= posMax);
+        } while (distVersCentre <= posMin || distVersCentre >= posMax || x<=posMin || x>=posMax || z<=posMin || z>=posMax);
 
         bool posAccepter = true;
         int distEntreDeux;
@@ -249,10 +257,11 @@ static void init(void) {
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2); 
+    glEnable(GL_LIGHT3);
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
-    initTexture();
+    //initTexture();
     genSol((int)tailleMars);
     placeRockRandomly();
 }
@@ -284,89 +293,133 @@ void rocher2(float x, float y, float z, float taille) {
     glScalef(1, 1, 1);
 
     glBegin(GL_POLYGON);
+    glNormal3f(0.0F, -1.0F, 0.0F);
+    glTexCoord2f(0.0F, 0.2F);
     glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glTexCoord2f(0.0F, 0.5F);
     glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glTexCoord2f(0.9F, 0.8F);
     glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glTexCoord2f(1.0F, 0.5F);
     glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glTexCoord2f(0.8F, 0.3F);
     glVertex3f(16 * taille, 0 * taille, 3 * taille); //6
+    glTexCoord2f(0.6F, 0.0F);
     glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glTexCoord2f(0.3F, 0.0F);
     glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glTexCoord2f(0.0F, 0.2F);
+    glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
     glEnd();
 
     glBegin(GL_POLYGON);
+    glNormal3f(0.0F, 1.0F, 0.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
+    glTexCoord2f(0.3F, 0.8F);
     glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
+    glTexCoord2f(0.8F, 0.5F);
     glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glTexCoord2f(0.8F, 0.0F);
     glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
+    glTexCoord2f(0.5F, 0.5F);
     glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glTexCoord2f(0.0F, 0.0F);
+    glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
     glEnd();
 
     glBegin(GL_QUADS); //15
+    glNormal3f(0.0F, 0.0F, 1.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
+    glTexCoord2f(0.5F, 0.5F);
     glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
-
     glEnd();
 
 
     glBegin(GL_QUADS); //16
+    glNormal3f(0.0F, 0.0F, 1.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(10 * taille, 0 * taille, 8 * taille); //3
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glTexCoord2f(0.8F, 0.8F);
     glVertex3f(11 * taille, 5 * taille, 4 * taille); //11
-
-
     glEnd();
 
     glBegin(GL_TRIANGLES); //17
+    glNormal3f(1.0F, 0.0F, 1.0F);
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(17 * taille, 0 * taille, 6 * taille); //4
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
     glEnd();
+
 
 
     glBegin(GL_POLYGON); //18
+    glNormal3f(1.0F, 0.0F, -1.0F);
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
+    glTexCoord2f(0.6F, 0.0F);
     glVertex3f(16 * taille, 0 * taille, 3 * taille); //6
+    glTexCoord2f(0.4F, 0.0F);
     glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glTexCoord2f(0.0F, 0.5F);
     glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
+    glTexCoord2f(0.4F, 1.0F);
     glVertex3f(13 * taille, 7 * taille, 6 * taille); //12
+    glTexCoord2f(1.0F, 0.0F);
+    glVertex3f(18 * taille, 0 * taille, 4 * taille); //5
 
     glEnd();
 
     glBegin(GL_QUADS); //19
+    glNormal3f(0.0F, 0.0F, -1.0F);
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(13 * taille, 0 * taille, 0 * taille); //7
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glTexCoord2f(0.4F, 1.0F);
     glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glTexCoord2f(0.8F, 0.5F);
     glVertex3f(11 * taille, 4 * taille, 2 * taille); //13
-
     glEnd();
 
     glBegin(GL_QUADS); //20
+    glNormal3f(-1.0F, 0.0F, -1.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glTexCoord2f(0.8F, 0.0F);
     glVertex3f(5 * taille, 0 * taille, 0 * taille); //8
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(7 * taille, 7 * taille, 4 * taille); //14
+    glTexCoord2f(0.3F, 0.5F);
     glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
-
     glEnd();
 
-    glBegin(GL_QUADS); //20
+    glBegin(GL_QUADS); //21
+    glNormal3f(-1.0F, 0.0F, 0.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(0 * taille, 0 * taille, 2 * taille); //1
+    glTexCoord2f(0.3F, 0.0F);
     glVertex3f(2 * taille, 0 * taille, 5 * taille); //2
+    glTexCoord2f(1.0F, 0.8F);
     glVertex3f(6 * taille, 3 * taille, 5 * taille); //10
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(3 * taille, 4 * taille, 2 * taille); //9
-
-    glEnd();
-
-    glBegin(GL_QUADS); //19
-    glVertex3f(0 * taille, 0 * taille, 8 * taille); //7
-    glVertex3f(0 * taille, 0 * taille, 0 * taille); //8
-    glVertex3f(18 * taille, 0 * taille, 0 * taille); //14
-    glVertex3f(18 * taille, 0 * taille, 8 * taille); //13
-
     glEnd();
 
 
@@ -377,73 +430,107 @@ void rocher(float x, float y, float z, float taille) {
     glPushMatrix();
     glTranslatef(x, y, z);
     glScalef(1, 1, 1);
-    // glRotatef(-45, 1.0f, 0.0f, 0.0f);
     float zz = 2.0f;
     float z2 = -2.0f;
     glBegin(GL_POLYGON);
     glNormal3f(0.0F, 0.0F, 1.0F);
+    glTexCoord2f(0.2F, 0.0F);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+    glTexCoord2f(0.0F, 0.5F);
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glTexCoord2f(1.0F, 0.8F);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glTexCoord2f(1.0F, 0.4F);
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
+    glTexCoord2f(0.6F, 0.0F);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glTexCoord2f(0.2F, 0.0F);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
     glEnd();
 
     glBegin(GL_POLYGON);
     glNormal3f(1.0F, 0.0F, 0.0F);
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glTexCoord2f(0.3F, 1.0F);
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glTexCoord2f(0.4F, 0.0F);
     glVertex3f(3.0f * taille, -0.5F * taille, z2 * taille);//8
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glTexCoord2f(0.8F, 1.0F);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
     glEnd();
 
     glBegin(GL_POLYGON);
     glNormal3f(-1.0F, 0.0F, -0.0F);
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
+    glTexCoord2f(0.9F, 0.0F);
     glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glTexCoord2f(0.5F, 0.0F);
     glVertex3f(-4.5f * taille, -1.0f * taille, z2 * taille);//11
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glTexCoord2f(0.6F, 1.0F);
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
 
     glBegin(GL_QUADS);
     glNormal3f(0.0F, 0.0F, -1.0F);
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
 
     glEnd();
     glBegin(GL_TRIANGLES);
     glNormal3f(-1.0F, 0.0F, -1.0F);
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glTexCoord2f(0.0F, 0.5F);
     glVertex3f(-4.5f * taille, -1.0f * taille, z2 * taille);//11
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glNormal3f(1.0F, 0.0F, -1.0F);
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glTexCoord2f(1.0F, 0.5F);
     glVertex3f(3.0f * taille, -0.5F * taille, z2 * taille);//8
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glNormal3f(0.0F, 1.0F, 0.0F);
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(2.0f * taille, 1.3f * taille, zz * taille);//4
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glNormal3f(0.0F, 1.0F, 0.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, 1.8f * taille, z2 * taille);//10
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, 1.5F * taille, z2 * taille);//9
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(0.0f * taille, 2.0f * taille, zz * taille);//3
     glEnd();
 
@@ -451,25 +538,35 @@ void rocher(float x, float y, float z, float taille) {
 
     glBegin(GL_QUADS);
     glNormal3f(0.0F, -1.0F, 0.0F);
+    glTexCoord2f(0.8F, 1.0F);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glTexCoord2f(0.4F, 1.0F);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
 
     glEnd();
 
     glBegin(GL_TRIANGLES);
     glNormal3f(1.0F, -1.0F, 0.0F);
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(1.8f * taille, -2 * taille, zz * taille);//6
+    glTexCoord2f(1.0F, 0.0F);
     glVertex3f(2.8f * taille, -2.0F * taille, z2 * taille);//7
+    glTexCoord2f(0.5F, 1.0F);
     glVertex3f(2.2f * taille, -1.0f * taille, zz * taille);//5
     glEnd();
 
 
     glBegin(GL_TRIANGLES);
     glNormal3f(-1.0F, -1.0F, 0.0F);
+    glTexCoord2f(0.0F, 0.0F);
     glVertex3f(-4.0f * taille, -2 * taille, z2 * taille);//12
+    glTexCoord2f(0.0F, 1.0F);
     glVertex3f(-2.0f * taille, -2.0f * taille, zz * taille); //1
+    glTexCoord2f(1.0F, 1.0F);
     glVertex3f(-2.5f * taille, -0.3f * taille, zz * taille);//2
     glEnd();
 
@@ -483,11 +580,12 @@ static void genTerrain() {
     nTexture = 0;
     
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,marron);
-    /*initTexture();
-    glEnable(GL_TEXTURE_2D);*/
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
     
     glNormal3f(0.0F, 1.0F, 0.0F);
-    glBegin(GL_QUADS);
+    //Sol plat pour fluidité, modifier les posRobot.y par posRobot.y=4
+   /* glBegin(GL_QUADS);
     glTexCoord2f(0.0F, 0.0F);
     glVertex3f(0,0, 0);
     glTexCoord2f(1.0F, 0.0F);
@@ -496,25 +594,25 @@ static void genTerrain() {
     glVertex3f(tailleMars, 0, tailleMars);
     glTexCoord2f(0.0F, 1.0F);
     glVertex3f(0, 0, tailleMars);
-    glEnd();
+    glEnd();*/
 
-    /*for (float x = 0; x < tailleMars - 1; x++) {
-        for (float z = 0; z < tailleMars - 1; z++) {
+    for (float x = 0; x < tailleMars - 2; x+=2) {
+        for (float z = 0; z < tailleMars - 2; z+=2) {
             int x_tab = (int)x;
             int z_tab = (int)z;
             glBegin(GL_QUADS);
             glTexCoord2f(0.0F, 0.0F);
             glVertex3f(x, yMat[x_tab][z_tab], z);
             glTexCoord2f(1.0F, 0.0F);
-            glVertex3f(x + 1, yMat[x_tab + 1][z_tab], z);
+            glVertex3f(x + 2, yMat[x_tab + 2][z_tab], z);
             glTexCoord2f(1.0F, 1.0F);
-            glVertex3f(x + 1, yMat[x_tab + 1][z_tab + 1], z + 1);
+            glVertex3f(x + 2, yMat[x_tab + 2][z_tab + 2], z + 2);
             glTexCoord2f(0.0F, 1.0F);
-            glVertex3f(x, yMat[x_tab][z_tab + 1], z + 1);
+            glVertex3f(x, yMat[x_tab][z_tab +2], z + 2);
            
             glEnd();
         }
-    }*/
+    }
     glDisable(GL_TEXTURE_2D);
     
     glPopMatrix();
@@ -524,8 +622,8 @@ static void genCote() {
     float y= 100.0F;
     nTexture = 2;
     glPushMatrix();
-    /*initTexture();
-    glEnable(GL_TEXTURE_2D);*/
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
     double mid = tailleMars / 2;
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, texture);
@@ -584,46 +682,27 @@ static void PlacerRochers(void) {
     glPushMatrix();
     glScalef(1.0F, 1.0F, 1.0F);
     float y = 0.0;
+    nTexture = 3;
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, gris);
-    /*initTexture();
-    glEnable(GL_TEXTURE_2D);*/
+    initTexture();
+    glEnable(GL_TEXTURE_2D);
     int x, z = 0;
     for (int i = 0; i < nbRocherMax -1; i++) {
         x = mat_posRocher[i][0];
         z = mat_posRocher[i][1];
         if (mat_obstacles[x][z] != -1) {
-            //printf("x : %d,    z : %d\n", x, z);
-            modifMatR1(x, z, TR1, 1);
-            //y = yMat[x][z] + TR1 * 1.6;
-            y = 5;
-            rocher(x, y, z, TR1);
+            if (i % 2 == 0) {
+                modifMatR1(x, z, TR1, 1);
+                y = yMat[x][z] + TR1 * 1.6;
+                rocher(x, y, z, TR1);
+            }
+            else {
+                modifMatR2(x, z, TR2, 1);
+                y = yMat[x][z] - TR2 * 0.4;
+                rocher2(x, y, z, TR2);
+            }
         }
     }
-    glPopMatrix();
-    return;
-    x = tailleMars/2+20;//Pos robot initial +30
-    z = tailleMars / 2 +30;
-    /*double dist = sqrt((x - posRobot.x) * (x - posRobot.x) + (z - posRobot.z) * (z - posRobot.z));
-    if (dist < TR1*5) PAS construire*/
-    /*if (mat_obstacles[x][z] != -1) {
-        modifMatR1(x, z, TR1, 1);
-        y = yMat[x][z]+TR1*1.6;
-        rocher(x,y,z, TR1);
-    }*/
-    /*x -= 27;
-    z += 27;
-    if (mat_obstacles[x][z] != -1) {
-        modifMatR1(x, z, TR1, 1);
-        y = yMat[x][z]+ TR1 * 1.6;
-        rocher(x, y, z, TR1);
-    }
-    x -= 0;
-    z -= 100;
-    if (mat_obstacles[x][z] != -1) {
-        modifMatR2(x, z, TR2, 1);
-        y = yMat[x][z]-TR2*0.4;
-        rocher2(x, y, z, TR2);
-    }*/
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
@@ -646,8 +725,7 @@ void brasRobot(float r1, float r2, bool droite, double taille) {
         glRotatef(r1, 0.0f, 1.0f, 0.0f);
         glTranslatef(taille / 3.6, 0.0f, 0.0f);
         glPushMatrix();
-        /*  glScalef(2.0f, 1.0f, 1.0f);
-          glutSolidCube(1.0);*/
+        
         glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
         cylindre(taille / 3, taille / 3 / 3 / 2, 12, 12);
 
@@ -814,6 +892,7 @@ void robot(double taille) {
 
     glPushMatrix();
     glScalef(0.8f, 1.0f, 1.0f);
+    glRotatef(rotaBras, 1.0, 0.0, 0.0);
     brasRobot(r1, -r2, droite, taille);
     brasRobot(r1, r2, !droite, taille);
     glPopMatrix();
@@ -849,7 +928,7 @@ static void avancer() {
     posRobot.x += (dirRobot.x / prop);
     posRobot.z += (dirRobot.z / prop);
     double currY = posRobot.y;
-    //posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
     double diffY = posRobot.y - currY;
     printf("diff y = %f\n", diffY);
     if (diffY > 0)
@@ -866,7 +945,7 @@ static void recule() {
     posRobot.x -= (dirRobot.x / prop);
     posRobot.z -= (dirRobot.z / prop);
     double currY = posRobot.y;
-    //posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
+    posRobot.y = yMat[(int)posRobot.x][(int)posRobot.z]+ecart;
     double diffY = posRobot.y - currY;
     printf("diff y = %f\n", diffY);
     if (diffY > 0)
@@ -966,28 +1045,46 @@ static void reshape(int wx, int wy) {
 /* n'est en file d'attente                      */
 static void idle(void) {
     //printf("I\n");
-    
-    //saut
-    if (montee) {
-        //Monté du saut
-        vitesseSaut = (maxSaut - posRobot.y)/30;
-        if (vitesseSaut < 0.004) vitesseSaut = 0.004;
-        if (posRobot.y < maxSaut) posRobot.y += vitesseSaut;
-        else montee = false;
-    }
-    else {
-        //Descente du saut en fonction du temps et de la gravité
-        auto la = std::chrono::system_clock::now();
-        std::chrono::duration<double> t_ec = la - startSaut;
-    
-        vitesseSaut = (graviteMars * t_ec.count())/50;
-        
-        if (vitesseSaut < 0.004) vitesseSaut = 0.004;
-        if (posRobot.y > ymin) posRobot.y -= vitesseSaut;
-        else {
-            glutIdleFunc(NULL);
-            anim = false;
+    if (numAnim == 0) {
+        //saut
+        if (montee) {
+            //Monté du saut
+            vitesseSaut = (maxSaut - posRobot.y) / 30;
+            if (vitesseSaut < 0.004) vitesseSaut = 0.004;
+            if (posRobot.y < maxSaut) posRobot.y += vitesseSaut;
+            else montee = false;
         }
+        else {
+            //Descente du saut en fonction du temps et de la gravité
+            auto la = std::chrono::system_clock::now();
+            std::chrono::duration<double> t_ec = la - startSaut;
+
+            vitesseSaut = (graviteMars * t_ec.count()) / 50;
+
+            if (vitesseSaut < 0.004) vitesseSaut = 0.004;
+            if (posRobot.y > ymin) posRobot.y -= vitesseSaut;
+            else {
+                glutIdleFunc(NULL);
+                anim = false;
+            }
+        }
+    }
+    else if (numAnim == 1) {
+        //Frappe
+        if (!endFrappe) {
+            rotaBras +=4;
+            if (rotaBras>40) {
+                endFrappe = true;
+            }
+        }
+        else {
+            rotaBras -=4;
+            if (rotaBras == 0) {
+                glutIdleFunc(NULL);
+                anim = false;
+            }
+        }
+        
     }
     glutPostRedisplay();
 }
@@ -1015,6 +1112,7 @@ static void keyboard(unsigned char key, int x, int y) {
 
     //Sauter avec la touche Entrer
     case 13: //enter
+        numAnim = 0;
         if (anim) {
             glutIdleFunc(NULL);
             anim = false;
@@ -1081,6 +1179,9 @@ static void keyboard(unsigned char key, int x, int y) {
 
     //Détruire une pierre
     case 'f':
+        numAnim = 1;
+        endFrappe = false;
+        glutIdleFunc(idle);
         if (contrePierre) {
             nbCoup++;
             if (nbCoup == 3) {
@@ -1199,6 +1300,8 @@ static void clean(void) {
         free(yMat[i]);
     };
     free(yMat);
+    free(allX);
+    free(allZ);
     printf("Bye\n");
 }
 

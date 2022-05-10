@@ -5,8 +5,10 @@ VERA AULARD Nathan
 COSTANTINI Enzo
 
 PARTIE 1 - Doc d'utilisation :
-Un robot est placé au centre de la map (((METTRE APRES (taille de la map = variable tailleMars dans le code). La caméra par défaut est une caméra à la 3ème personne placé derrière le robot.
-Cette caméra peut être déplacer via les touches : 'z', 'q', 's', 'd'. Cette caméra est centrée sur le robot. Les touches 'y' ou 'Y' permettent de gérer la hauteur de cette caméra.
+Un robot est placé au centre de la map (taille de la map = variable tailleMars dans le code). La caméra par défaut est une caméra à la 3ème personne placé derrière le robot.
+Cette caméra peut être déplacer via les touches : 'z', 'q', 's', 'd'. Cette caméra est centrée sur le robot.
+Ces touches bougent la caméra respectivement en z, x, -z et -x.
+Les touches 'y' ou 'Y' permettent de gérer la hauteur de cette caméra.
 Il est possible de changer de caméra grâce à la touche 'c'. Cette deuxième caméra est une vue depuis le robot, à la 1ère personne.
 Cette caméra suit les mouvements de la tête du robot. Le robot tourne sur lui-même avec les flèches directionnelles gauche et droite, ou bien avec un balayage de la souris.
 Le robot peut avancer et reculer grâce aux flèches directionnelles haut et bas.
@@ -28,6 +30,23 @@ La deuxième est une lumière factive permettant d'améliorer la visibilité de 
 La troisième est une lumière placée dans les yeux du robot, afin d'éclairer ce qu'il voit.
 
 La modélisation des matériaux est effectuée à chaque objet, pour spécifier la couleur diffusée et refléchie des objets. On les retrouve dans les fonctions genTerrain, genCote, robot, rocher et rocher1.
+
+Textures : 
+Les textures sont gérées via la fonction initTexture. On retrouve 3 textures, celle du sol représentant Mars (textMars1.png), celle du ciel représentant les étoiles (etoile3.png) et celle représentant les rochers (rocher1.png). Un numéro de texture est attribué avant l'appel de initTexture pour déterminer la texture convenant à l'objet.
+
+Caméras :
+Deux caméras sont disponibles, la caméra vue Robot (1ère personne) et la caméra à la 3ème personne. On peut alterner les caméras grâce à la touche 'c'. Les paramètres des caméras se situent au début de la fonction display, après le paramètrage des lumières. A cet endroit, nous définissions la position et la direction de la caméra. Afin de respecter la perspective des objets, nous avons également définis la fonction gluPerspective dans la fonction "reshape()".
+La caméra à la 3ème personne est mobile via les touches 'z', 'q', 's', 'd'.
+La caméra à la 1ère personne suit donc les mouvements du robot, donc via les flèches direcctionnelles du clavier ou bien grâce au glissement de la souris.
+
+Animation : 
+Le robot bouge via les touches directionnelles, mais il existe deux animations en plus. Il y a le saut, disponible avec la touche 'Entrée', puis il y a la frappe, disponible avec la touche'f'. Cette touche permet de supprimer un rocher en appuyant trois fois lorsqu'on est collé à un rocher.
+Malheureusement, la lenteur de notre projet une fois le sol mis en place enlève toute la fluidité de ces animations. Elles sont définis dans la fonction idle().
+
+Modèle Physique :
+La détection d'obstacles est définis dans la fonction "getLimite", en regardant si la nouvelle position du robot ne touche pas un obstacle grâce à une matrice d'obstacles. Cette fonction est appelée lorsque le robot avance ou recule.
+La gravité est légèrement utilisée lors de la retombée du saut (fonction "idle()").
+
 
 
 Partie 3 - Listes des ressources à compiler ensemble :
